@@ -1,14 +1,10 @@
-# num
+# num-complex
 
-[![](https://travis-ci.org/rust-num/num.svg)](https://travis-ci.org/rust-num/num)
+[![crate](https://img.shields.io/crates/v/num-complex.svg)](https://crates.io/crates/num-complex)
+[![documentation](https://docs.rs/num-complex/badge.svg)](https://docs.rs/num-complex)
+[![Travis status](https://travis-ci.org/rust-num/num-complex.svg?branch=master)](https://travis-ci.org/rust-num/num-complex)
 
-A collection of numeric types and traits for Rust.
-
-This includes new types for big integers, rationals, and complex numbers,
-new traits for generic programming on numeric properties like `Integer`,
-and generic range iterators.
-
-[Documentation](http://rust-num.github.io/num)
+`Complex` numbers for Rust.
 
 ## Usage
 
@@ -16,16 +12,15 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-num = "0.1"
+num-complex = "0.1"
 ```
 
 and this to your crate root:
 
 ```rust
-extern crate num;
+extern crate num_compex;
 ```
 
 ## Compatibility
 
-Most of the `num` crates are tested for rustc 1.8 and greater.
-The exception is `num-derive` which requires at least rustc 1.15.
+The `num-complex` crate is tested for rustc 1.8 and greater.
