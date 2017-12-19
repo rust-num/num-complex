@@ -1,6 +1,6 @@
 #!/bin/sh
 # Use rustup to locally run the same suite of tests as .travis.yml.
-# (You should first install/update 1.8.0, 1.15.0, beta, and nightly.)
+# (You should first install/update 1.8.0, stable, beta, and nightly.)
 
 set -ex
 
