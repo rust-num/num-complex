@@ -22,6 +22,7 @@ extern crate num_traits as traits;
 extern crate rustc_serialize;
 
 #[cfg(feature = "serde")]
+#[macro_use]
 extern crate serde;
 
 use std::error::Error;
@@ -63,6 +64,7 @@ use traits::{Zero, One, Num, Inv, Float};
 /// ```
 #[derive(PartialEq, Eq, Copy, Clone, Hash, Debug, Default)]
 #[cfg_attr(feature = "rustc-serialize", derive(RustcEncodable, RustcDecodable))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct Complex<T> {
     /// Real portion of the complex number
@@ -1070,29 +1072,6 @@ impl<T: Num + Clone> Num for Complex<T> {
     {
         from_str_generic(s, |x| -> Result<T, T::FromStrRadixErr> {
                                 T::from_str_radix(x, radix) })
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<T> serde::Serialize for Complex<T>
-    where T: serde::Serialize
-{
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
-        S: serde::Serializer
-    {
-        (&self.re, &self.im).serialize(serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<T> serde::Deserialize for Complex<T> where
-    T: serde::Deserialize + Num + Clone
-{
-    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where
-        D: serde::Deserializer,
-    {
-        let (re, im) = try!(serde::Deserialize::deserialize(deserializer));
-        Ok(Complex::new(re, im))
     }
 }
 
