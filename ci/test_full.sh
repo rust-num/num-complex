@@ -12,12 +12,6 @@ cargo test --verbose
 cargo build --no-default-features
 cargo test --no-default-features
 
-# Each isolated feature should also work everywhere.
-for feature in rustc-serialize serde; do
-  cargo build --verbose --no-default-features --features="$feature"
-  cargo test --verbose --no-default-features --features="$feature"
-done
-
-# Downgrade serde and build test the 0.7.0 channel as well
-cargo update -p serde --precise 0.7.0
-cargo build --verbose --no-default-features --features "serde"
+# It also should build with serde features
+cargo build --verbose --no-default-features --features=serde
+cargo test --verbose --no-default-features --features=serde
