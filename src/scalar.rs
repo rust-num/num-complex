@@ -39,7 +39,7 @@ where
     fn powf(&self, exp: Self::Real) -> Self;
 
     /// Raise a number to a complex power.
-    fn powc(&self, exp: Complex<Self::Real>) -> Complex<Self::Real>;
+    fn powc(&self, exp: Self::Complex) -> Self::Complex;
 
     /// Returns complex-conjugate number
     fn conj(&self) -> Self;
@@ -93,21 +93,39 @@ where
     fn is_normal(self) -> bool;
 }
 
+macro_rules! impl_complex_unary {
+    ($($unary:ident),*) => {
+        $(
+        fn $unary(&self) -> Self {
+            Complex::$unary(self)
+        }
+        )*
+    }
+}
+
+macro_rules! impl_float_unary {
+    ($($unary:ident),*) => {
+        $(
+        fn $unary(&self) -> Self {
+            Float::$unary(*self)
+        }
+        )*
+    }
+}
+
+macro_rules! impl_is_any {
+    ($($is_any:ident),*) => {
+        $(
+        fn $is_any(self) -> bool {
+            self.$is_any()
+        }
+        )*
+    }
+}
+
 impl<T: Float + FromPrimitive> Scalar for Complex<T> {
     type Real = T;
     type Complex = Self;
-
-    fn sqrt(&self) -> Self {
-        Complex::sqrt(self)
-    }
-
-    fn exp(&self) -> Self {
-        Complex::exp(self)
-    }
-
-    fn ln(&self) -> Self {
-        Complex::ln(self)
-    }
 
     fn abs_sqr(&self) -> Self::Real {
         Complex::norm_sqr(self)
@@ -126,101 +144,26 @@ impl<T: Float + FromPrimitive> Scalar for Complex<T> {
         Complex::powf(self, exp)
     }
 
-    fn powc(&self, exp: Complex<Self::Real>) -> Complex<Self::Real> {
+    fn powc(&self, exp: Self::Complex) -> Self::Complex {
         Complex::powc(self, exp)
     }
 
-    fn conj(&self) -> Self {
-        Complex::conj(self)
-    }
-
-    fn sin(&self) -> Self {
-        Complex::sin(self)
-    }
-
-    fn cos(&self) -> Self {
-        Complex::cos(self)
-    }
-
-    fn tan(&self) -> Self {
-        Complex::tan(self)
-    }
-
-    fn asin(&self) -> Self {
-        Complex::asin(self)
-    }
-
-    fn acos(&self) -> Self {
-        Complex::acos(self)
-    }
-
-    fn atan(&self) -> Self {
-        Complex::atan(self)
-    }
-
-    fn sinh(&self) -> Self {
-        Complex::sinh(self)
-    }
-
-    fn cosh(&self) -> Self {
-        Complex::cosh(self)
-    }
-
-    fn tanh(&self) -> Self {
-        Complex::tanh(self)
-    }
-
-    fn asinh(&self) -> Self {
-        Complex::asinh(self)
-    }
-
-    fn acosh(&self) -> Self {
-        Complex::acosh(self)
-    }
-
-    fn atanh(&self) -> Self {
-        Complex::atanh(self)
-    }
-
-    fn is_nan(self) -> bool {
-        Complex::is_nan(self)
-    }
-
-    fn is_infinite(self) -> bool {
-        Complex::is_infinite(self)
-    }
-
-    fn is_finite(self) -> bool {
-        Complex::is_finite(self)
-    }
-
-    fn is_normal(self) -> bool {
-        Complex::is_normal(self)
-    }
+    impl_complex_unary!(
+        sqrt, exp, ln, conj,
+        sin, cos, tan,
+        asin, acos, atan,
+        sinh, cosh, tanh,
+        asinh, acosh, atanh
+    );
+    impl_is_any!(is_nan, is_infinite, is_finite, is_normal);
 }
 
 impl<T: Float + FromPrimitive> Scalar for T {
     type Real = T;
     type Complex = Complex<T>;
 
-    fn sqrt(&self) -> Self {
-        Float::sqrt(*self)
-    }
-
-    fn exp(&self) -> Self {
-        Float::exp(*self)
-    }
-
-    fn ln(&self) -> Self {
-        Float::ln(*self)
-    }
-
     fn abs_sqr(&self) -> Self::Real {
         *self * *self
-    }
-
-    fn abs(&self) -> Self::Real {
-        Float::abs(*self)
     }
 
     fn powi(&self, exp: i32) -> Self {
@@ -231,7 +174,7 @@ impl<T: Float + FromPrimitive> Scalar for T {
         Float::powf(*self, exp)
     }
 
-    fn powc(&self, exp: Complex<Self::Real>) -> Complex<Self::Real> {
+    fn powc(&self, exp: Self::Complex) -> Self::Complex {
         exp.expf(*self)
     }
 
@@ -239,69 +182,14 @@ impl<T: Float + FromPrimitive> Scalar for T {
         *self
     }
 
-    fn sin(&self) -> Self {
-        Float::sin(*self)
-    }
-
-    fn cos(&self) -> Self {
-        Float::cos(*self)
-    }
-
-    fn tan(&self) -> Self {
-        Float::tan(*self)
-    }
-
-    fn asin(&self) -> Self {
-        Float::asin(*self)
-    }
-
-    fn acos(&self) -> Self {
-        Float::acos(*self)
-    }
-
-    fn atan(&self) -> Self {
-        Float::atan(*self)
-    }
-
-    fn sinh(&self) -> Self {
-        Float::sinh(*self)
-    }
-
-    fn cosh(&self) -> Self {
-        Float::cosh(*self)
-    }
-
-    fn tanh(&self) -> Self {
-        Float::tanh(*self)
-    }
-
-    fn asinh(&self) -> Self {
-        Float::asinh(*self)
-    }
-
-    fn acosh(&self) -> Self {
-        Float::acosh(*self)
-    }
-
-    fn atanh(&self) -> Self {
-        Float::atanh(*self)
-    }
-
-    fn is_nan(self) -> bool {
-        Float::is_nan(self)
-    }
-
-    fn is_infinite(self) -> bool {
-        Float::is_infinite(self)
-    }
-
-    fn is_finite(self) -> bool {
-        Float::is_finite(self)
-    }
-
-    fn is_normal(self) -> bool {
-        Float::is_normal(self)
-    }
+    impl_float_unary!(
+        sqrt, exp, ln, abs,
+        sin, cos, tan,
+        asin, acos, atan,
+        sinh, cosh, tanh,
+        asinh, acosh, atanh
+    );
+    impl_is_any!(is_nan, is_infinite, is_finite, is_normal);
 }
 
 #[cfg(test)]
