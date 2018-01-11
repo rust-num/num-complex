@@ -1958,4 +1958,18 @@ mod test {
         test("1i - 2i");
         test("+ 1 - 3.0i");
     }
+
+    #[test]
+    fn test_sum() {
+        let v = vec![_0_1i, _4_2i, _1_0i, _1_1i];
+        let _: Complex64 = v.iter().sum();
+        let _: Complex64 = v.into_iter().sum();
+    }
+
+    #[test]
+    fn test_prod() {
+        let v = vec![_0_1i, _4_2i, _1_0i, _1_1i];
+        let _: Complex64 = v.iter().product();
+        let _: Complex64 = v.into_iter().product();
+    }
 }
