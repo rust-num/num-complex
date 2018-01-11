@@ -1961,15 +1961,15 @@ mod test {
 
     #[test]
     fn test_sum() {
-        let v = vec![_0_1i, _4_2i, _1_0i, _1_1i];
-        let _: Complex64 = v.iter().sum();
-        let _: Complex64 = v.into_iter().sum();
+        let v = vec![_0_1i, _1_0i];
+        assert_eq!(v.iter().sum::<Complex64>(), _1_1i);
+        assert_eq!(v.into_iter().sum::<Complex64>(), _1_1i);
     }
 
     #[test]
     fn test_prod() {
-        let v = vec![_0_1i, _4_2i, _1_0i, _1_1i];
-        let _: Complex64 = v.iter().product();
-        let _: Complex64 = v.into_iter().product();
+        let v = vec![_0_1i, _1_0i];
+        assert_eq!(v.iter().product::<Complex64>(), _0_1i);
+        assert_eq!(v.into_iter().product::<Complex64>(), _0_1i);
     }
 }
