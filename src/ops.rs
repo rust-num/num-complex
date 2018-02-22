@@ -406,3 +406,162 @@ impl<T: Clone + Num> Rem<T> for Complex<T> {
 }
 
 real_arithmetic!(usize, u8, u16, u32, u64, isize, i8, i16, i32, i64, f32, f64);
+
+#[cfg(test)]
+mod tests {
+    #![allow(non_upper_case_globals)]
+
+    use super::super::{Complex, Complex64};
+
+    const _0_0i: Complex64 = Complex { re: 0.0, im: 0.0 };
+    const _1_0i: Complex64 = Complex { re: 1.0, im: 0.0 };
+    const _1_1i: Complex64 = Complex { re: 1.0, im: 1.0 };
+    const _0_1i: Complex64 = Complex { re: 0.0, im: 1.0 };
+    const _neg1_1i: Complex64 = Complex { re: -1.0, im: 1.0 };
+    const _05_05i: Complex64 = Complex { re: 0.5, im: 0.5 };
+    const all_consts: [Complex64; 5] = [_0_0i, _1_0i, _1_1i, _neg1_1i, _05_05i];
+    const _4_2i: Complex64 = Complex { re: 4.0, im: 2.0 };
+
+    // Test both a + b and a += b
+    macro_rules! test_a_op_b {
+        ($a:ident + $b:expr, $answer:expr) => {
+            assert_eq!($a + $b, $answer);
+            assert_eq!({ let mut x = $a; x += $b; x}, $answer);
+        };
+        ($a:ident - $b:expr, $answer:expr) => {
+            assert_eq!($a - $b, $answer);
+            assert_eq!({ let mut x = $a; x -= $b; x}, $answer);
+        };
+        ($a:ident * $b:expr, $answer:expr) => {
+            assert_eq!($a * $b, $answer);
+            assert_eq!({ let mut x = $a; x *= $b; x}, $answer);
+        };
+        ($a:ident / $b:expr, $answer:expr) => {
+            assert_eq!($a / $b, $answer);
+            assert_eq!({ let mut x = $a; x /= $b; x}, $answer);
+        };
+        ($a:ident % $b:expr, $answer:expr) => {
+            assert_eq!($a % $b, $answer);
+            assert_eq!({ let mut x = $a; x %= $b; x}, $answer);
+        }
+    }
+
+    // Test both a + b and a + &b
+    macro_rules! test_op {
+        ($a:ident $op:tt $b:expr, $answer:expr) => {
+            test_a_op_b!($a $op $b, $answer);
+            test_a_op_b!($a $op &$b, $answer);
+        }
+    }
+
+    mod complex_arithmetic {
+        use super::{all_consts, _05_05i, _0_0i, _0_1i, _1_0i, _1_1i, _4_2i, _neg1_1i};
+        use traits::Zero;
+
+        #[test]
+        fn test_add() {
+            test_op!(_05_05i + _05_05i, _1_1i);
+            test_op!(_0_1i + _1_0i, _1_1i);
+            test_op!(_1_0i + _neg1_1i, _0_1i);
+
+            for &c in all_consts.iter() {
+                test_op!(_0_0i + c, c);
+                test_op!(c + _0_0i, c);
+            }
+        }
+
+        #[test]
+        fn test_sub() {
+            test_op!(_05_05i - _05_05i, _0_0i);
+            test_op!(_0_1i - _1_0i, _neg1_1i);
+            test_op!(_0_1i - _neg1_1i, _1_0i);
+
+            for &c in all_consts.iter() {
+                test_op!(c - _0_0i, c);
+                test_op!(c - c, _0_0i);
+            }
+        }
+
+        #[test]
+        fn test_mul() {
+            test_op!(_05_05i * _05_05i, _0_1i.unscale(2.0));
+            test_op!(_1_1i * _0_1i, _neg1_1i);
+
+            // i^2 & i^4
+            test_op!(_0_1i * _0_1i, -_1_0i);
+            assert_eq!(_0_1i * _0_1i * _0_1i * _0_1i, _1_0i);
+
+            for &c in all_consts.iter() {
+                test_op!(c * _1_0i, c);
+                test_op!(_1_0i * c, c);
+            }
+        }
+
+        #[test]
+        fn test_div() {
+            test_op!(_neg1_1i / _0_1i, _1_1i);
+            for &c in all_consts.iter() {
+                if c != Zero::zero() {
+                    test_op!(c / c, _1_0i);
+                }
+            }
+        }
+
+        #[test]
+        fn test_rem() {
+            test_op!(_neg1_1i % _0_1i, _0_0i);
+            test_op!(_4_2i % _0_1i, _0_0i);
+            test_op!(_05_05i % _0_1i, _05_05i);
+            test_op!(_05_05i % _1_1i, _05_05i);
+            assert_eq!((_4_2i + _05_05i) % _0_1i, _05_05i);
+            assert_eq!((_4_2i + _05_05i) % _1_1i, _05_05i);
+        }
+
+        #[test]
+        fn test_neg() {
+            assert_eq!(-_1_0i + _0_1i, _neg1_1i);
+            assert_eq!((-_0_1i) * _0_1i, _1_0i);
+            for &c in all_consts.iter() {
+                assert_eq!(-(-c), c);
+            }
+        }
+    }
+
+    mod real_arithmetic {
+        use super::super::Complex;
+        use super::{_4_2i, _neg1_1i};
+
+        #[test]
+        fn test_add() {
+            test_op!(_4_2i + 0.5, Complex::new(4.5, 2.0));
+            assert_eq!(0.5 + _4_2i, Complex::new(4.5, 2.0));
+        }
+
+        #[test]
+        fn test_sub() {
+            test_op!(_4_2i - 0.5, Complex::new(3.5, 2.0));
+            assert_eq!(0.5 - _4_2i, Complex::new(-3.5, -2.0));
+        }
+
+        #[test]
+        fn test_mul() {
+            assert_eq!(_4_2i * 0.5, Complex::new(2.0, 1.0));
+            assert_eq!(0.5 * _4_2i, Complex::new(2.0, 1.0));
+        }
+
+        #[test]
+        fn test_div() {
+            assert_eq!(_4_2i / 0.5, Complex::new(8.0, 4.0));
+            assert_eq!(0.5 / _4_2i, Complex::new(0.1, -0.05));
+        }
+
+        #[test]
+        fn test_rem() {
+            assert_eq!(_4_2i % 2.0, Complex::new(0.0, 0.0));
+            assert_eq!(_4_2i % 3.0, Complex::new(1.0, 2.0));
+            assert_eq!(3.0 % _4_2i, Complex::new(3.0, 0.0));
+            assert_eq!(_neg1_1i % 2.0, _neg1_1i);
+            assert_eq!(-_4_2i % 3.0, Complex::new(-1.0, -2.0));
+        }
+    }
+}
