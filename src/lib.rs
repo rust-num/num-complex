@@ -216,15 +216,6 @@ where
 }
 
 #[cfg(test)]
-fn hash<T: std::hash::Hash>(x: &T) -> u64 {
-    use std::hash::{BuildHasher, Hasher};
-    use std::collections::hash_map::RandomState;
-    let mut hasher = <RandomState as BuildHasher>::Hasher::new();
-    x.hash(&mut hasher);
-    hasher.finish()
-}
-
-#[cfg(test)]
 mod test {
     #![allow(non_upper_case_globals)]
 
@@ -315,9 +306,17 @@ mod test {
         let a = Complex::new(0i32, 0i32);
         let b = Complex::new(1i32, 0i32);
         let c = Complex::new(0i32, 1i32);
-        assert!(::hash(&a) != ::hash(&b));
-        assert!(::hash(&b) != ::hash(&c));
-        assert!(::hash(&c) != ::hash(&a));
+        assert!(hash(&a) != hash(&b));
+        assert!(hash(&b) != hash(&c));
+        assert!(hash(&c) != hash(&a));
+
+        fn hash<T: ::std::hash::Hash>(x: &T) -> u64 {
+            use std::hash::{BuildHasher, Hasher};
+            use std::collections::hash_map::RandomState;
+            let mut hasher = <RandomState as BuildHasher>::Hasher::new();
+            x.hash(&mut hasher);
+            hasher.finish()
+        }
     }
 
     #[test]
