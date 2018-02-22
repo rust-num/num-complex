@@ -231,7 +231,7 @@ mod test {
     #![allow(non_upper_case_globals)]
 
     use super::{Complex, Complex64};
-    use std::f64;
+    use core::f64;
 
     use traits::{One, Zero};
 
@@ -313,6 +313,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "std")]
     fn test_hash() {
         let a = Complex::new(0i32, 0i32);
         let b = Complex::new(1i32, 0i32);
