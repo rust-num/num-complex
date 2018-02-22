@@ -1008,39 +1008,6 @@ mod test {
     }
 
     #[test]
-    fn test_to_string() {
-        fn test(c: Complex64, s: String) {
-            assert_eq!(c.to_string(), s);
-        }
-        test(_0_0i, "0+0i".to_string());
-        test(_1_0i, "1+0i".to_string());
-        test(_0_1i, "0+1i".to_string());
-        test(_1_1i, "1+1i".to_string());
-        test(_neg1_1i, "-1+1i".to_string());
-        test(-_neg1_1i, "1-1i".to_string());
-        test(_05_05i, "0.5+0.5i".to_string());
-    }
-
-    #[test]
-    fn test_string_formatting() {
-        let a = Complex::new(1.23456, 123.456);
-        assert_eq!(format!("{}", a), "1.23456+123.456i");
-        assert_eq!(format!("{:.2}", a), "1.23+123.46i");
-        assert_eq!(format!("{:.2e}", a), "1.23e0+1.23e2i");
-        assert_eq!(format!("{:+20.2E}", a), "     +1.23E0+1.23E2i");
-
-        let b = Complex::new(0x80, 0xff);
-        assert_eq!(format!("{:X}", b), "80+FFi");
-        assert_eq!(format!("{:#x}", b), "0x80+0xffi");
-        assert_eq!(format!("{:+#b}", b), "+0b10000000+0b11111111i");
-        assert_eq!(format!("{:+#16o}", b), "   +0o200+0o377i");
-
-        let c = Complex::new(-10, -10000);
-        assert_eq!(format!("{}", c), "-10-10000i");
-        assert_eq!(format!("{:16}", c), "      -10-10000i");
-    }
-
-    #[test]
     fn test_hash() {
         let a = Complex::new(0i32, 0i32);
         let b = Complex::new(1i32, 0i32);
