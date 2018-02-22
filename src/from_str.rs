@@ -1,7 +1,7 @@
 use super::Complex;
 
+use core::str::FromStr;
 use std::error::Error;
-use std::str::FromStr;
 
 use traits::Num;
 
@@ -151,8 +151,8 @@ impl<E: Error> Error for ParseComplexError<E> {
     }
 }
 
-impl<E: Error> ::std::fmt::Display for ParseComplexError<E> {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+impl<E: Error> ::core::fmt::Display for ParseComplexError<E> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
         self.description().fmt(f)
     }
 }
@@ -162,7 +162,7 @@ mod tests {
     #![allow(non_upper_case_globals)]
 
     use super::super::{Complex, Complex64};
-    use std::str::FromStr;
+    use core::str::FromStr;
 
     use traits::Num;
 

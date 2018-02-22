@@ -15,6 +15,10 @@
 //! The `num-complex` crate is tested for rustc 1.8 and greater.
 
 #![doc(html_root_url = "https://docs.rs/num-complex/0.1")]
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(feature = "std")]
+extern crate core;
 
 extern crate num_traits as traits;
 
@@ -25,13 +29,20 @@ extern crate rustc_serialize;
 extern crate serde;
 
 mod ops;
-mod fmt;
+#[cfg(feature = "std")]
 mod from_str;
-pub use from_str::ParseComplexError;
+#[cfg(feature = "std")]
+mod fmt;
+#[cfg(feature = "std")]
+mod math;
 
-use std::ops::Neg;
+use core::ops::Neg;
+use traits::{Num, One, Zero};
 
-use traits::{Float, Num, One, Zero};
+#[cfg(not(feature = "std"))]
+use traits::float::FloatCore as Float;
+#[cfg(feature = "std")]
+use traits::Float;
 
 // FIXME #1284: handle complex NaN & infinity etc. This
 // probably doesn't map to C's _Complex correctly.
@@ -320,6 +331,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "std")]
     fn test_hashset() {
         use std::collections::HashSet;
         let a = Complex::new(0i32, 0i32);

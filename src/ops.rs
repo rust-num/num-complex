@@ -1,5 +1,5 @@
 use super::Complex;
-use std::ops::{Add, Div, Mul, Neg, Rem, Sub};
+use core::ops::{Add, Div, Mul, Neg, Rem, Sub};
 use traits::{Num, Zero};
 
 macro_rules! forward_ref_ref_binop {
@@ -124,7 +124,7 @@ impl<T: Clone + Num> Rem<Complex<T>> for Complex<T> {
 // Op Assign
 
 mod opassign {
-    use std::ops::{AddAssign, DivAssign, MulAssign, RemAssign, SubAssign};
+    use core::ops::{AddAssign, DivAssign, MulAssign, RemAssign, SubAssign};
 
     use traits::NumAssign;
 

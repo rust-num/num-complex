@@ -1,5 +1,5 @@
 use super::Complex;
-use std::fmt;
+use core::fmt;
 use traits::{Num, Zero};
 
 macro_rules! write_complex {

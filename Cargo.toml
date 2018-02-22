@@ -16,7 +16,8 @@ readme = "README.md"
 [dependencies.num-traits]
 version = "0.2.0"
 default-features = false
-features = ["std"]
+git = "https://github.com/rust-num/num-traits"
+rev = "bfd62d4638392deff20907ad078d2b1521aa45ba"
 
 [dependencies.rustc-serialize]
 optional = true
@@ -27,5 +28,6 @@ optional = true
 version = ">= 0.7.0, < 0.9.0"
 
 [features]
-default = ["rustc-serialize"]
+default = ["std", "rustc-serialize"]
 unstable = []
+std = ["num-traits/std"]
