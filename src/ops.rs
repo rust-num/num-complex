@@ -411,7 +411,8 @@ real_arithmetic!(usize, u8, u16, u32, u64, isize, i8, i16, i32, i64, f32, f64);
 mod tests {
     #![allow(non_upper_case_globals)]
 
-    use super::super::{Complex, Complex64};
+    use super::Complex;
+    type Complex64 = Complex<f64>;
 
     const _0_0i: Complex64 = Complex { re: 0.0, im: 0.0 };
     const _1_0i: Complex64 = Complex { re: 1.0, im: 0.0 };

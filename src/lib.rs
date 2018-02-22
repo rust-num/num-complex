@@ -232,17 +232,16 @@ mod test {
 
     use super::{Complex, Complex64};
     use core::f64;
-
     use traits::{One, Zero};
 
-    pub const _0_0i: Complex64 = Complex { re: 0.0, im: 0.0 };
-    pub const _1_0i: Complex64 = Complex { re: 1.0, im: 0.0 };
-    pub const _1_1i: Complex64 = Complex { re: 1.0, im: 1.0 };
-    pub const _0_1i: Complex64 = Complex { re: 0.0, im: 1.0 };
-    pub const _neg1_1i: Complex64 = Complex { re: -1.0, im: 1.0 };
-    pub const _05_05i: Complex64 = Complex { re: 0.5, im: 0.5 };
-    pub const all_consts: [Complex64; 5] = [_0_0i, _1_0i, _1_1i, _neg1_1i, _05_05i];
-    pub const _4_2i: Complex64 = Complex { re: 4.0, im: 2.0 };
+    const _0_0i: Complex64 = Complex { re: 0.0, im: 0.0 };
+    const _1_0i: Complex64 = Complex { re: 1.0, im: 0.0 };
+    const _1_1i: Complex64 = Complex { re: 1.0, im: 1.0 };
+    const _0_1i: Complex64 = Complex { re: 0.0, im: 1.0 };
+    const _neg1_1i: Complex64 = Complex { re: -1.0, im: 1.0 };
+    const _05_05i: Complex64 = Complex { re: 0.5, im: 0.5 };
+    const all_consts: [Complex64; 5] = [_0_0i, _1_0i, _1_1i, _neg1_1i, _05_05i];
+    const _4_2i: Complex64 = Complex { re: 4.0, im: 2.0 };
 
     #[test]
     fn test_consts() {
