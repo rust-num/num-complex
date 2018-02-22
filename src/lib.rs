@@ -261,21 +261,6 @@ mod test {
     }
 
     #[test]
-    #[cfg_attr(target_arch = "x86", ignore)]
-    // FIXME #7158: (maybe?) currently failing on x86.
-    fn test_norm() {
-        fn test(c: Complex64, ns: f64) {
-            assert_eq!(c.norm_sqr(), ns);
-            assert_eq!(c.norm(), ns.sqrt())
-        }
-        test(_0_0i, 0.0);
-        test(_1_0i, 1.0);
-        test(_1_1i, 2.0);
-        test(_neg1_1i, 2.0);
-        test(_05_05i, 0.5);
-    }
-
-    #[test]
     fn test_scale_unscale() {
         assert_eq!(_05_05i.scale(2.0), _1_1i);
         assert_eq!(_1_1i.unscale(2.0), _05_05i);

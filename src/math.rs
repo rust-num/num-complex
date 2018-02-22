@@ -288,6 +288,21 @@ mod tests {
     pub const _4_2i: Complex64 = Complex { re: 4.0, im: 2.0 };
 
     #[test]
+    #[cfg_attr(target_arch = "x86", ignore)]
+    // FIXME #7158: (maybe?) currently failing on x86.
+    fn test_norm() {
+        fn test(c: Complex64, ns: f64) {
+            assert_eq!(c.norm_sqr(), ns);
+            assert_eq!(c.norm(), ns.sqrt())
+        }
+        test(_0_0i, 0.0);
+        test(_1_0i, 1.0);
+        test(_1_1i, 2.0);
+        test(_neg1_1i, 2.0);
+        test(_05_05i, 0.5);
+    }
+
+    #[test]
     fn test_arg() {
         fn test(c: Complex64, arg: f64) {
             assert!((c.arg() - arg).abs() < 1.0e-6)
