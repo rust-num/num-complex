@@ -188,17 +188,6 @@ impl<T: Clone + Num> One for Complex<T> {
     }
 }
 
-impl<T: Num + Clone> Num for Complex<T> {
-    type FromStrRadixErr = ParseComplexError<T::FromStrRadixErr>;
-
-    /// Parses `a +/- bi`; `ai +/- b`; `a`; or `bi` where `a` and `b` are of type `T`
-    fn from_str_radix(s: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr> {
-        from_str::from_str_generic(s, |x| -> Result<T, T::FromStrRadixErr> {
-            T::from_str_radix(x, radix)
-        })
-    }
-}
-
 #[cfg(feature = "serde")]
 impl<T> serde::Serialize for Complex<T>
 where
