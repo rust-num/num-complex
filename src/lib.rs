@@ -12,7 +12,7 @@
 //!
 //! ## Compatibility
 //!
-//! The `num-complex` crate is tested for rustc 1.8 and greater.
+//! The `num-complex` crate is tested for rustc 1.15 and greater.
 
 #![doc(html_root_url = "https://docs.rs/num-complex/0.1")]
 

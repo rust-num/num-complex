@@ -1,3 +1,12 @@
+# Release 0.2.0 (pending)
+
+- :warning: [num-complex now requires rustc 1.15 or greater][16].
+
+**Contributors**: @cuviper
+
+[16]: https://github.com/rust-num/num-complex/pull/16
+
+
 # Release 0.1.42
 
 - [num-complex now has its own source repository][num-356] at [rust-num/num-complex][home].
