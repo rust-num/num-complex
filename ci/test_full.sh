@@ -5,19 +5,21 @@ set -ex
 echo Testing num-complex on rustc ${TRAVIS_RUST_VERSION}
 
 # num-complex should build and test everywhere.
-cargo build --verbose
 cargo test --verbose
 
 # It should build with minimal features too.
-cargo build --no-default-features
 cargo test --no-default-features
 
-# Each isolated feature should also work everywhere.
-for feature in rustc-serialize serde; do
-  cargo build --verbose --no-default-features --features="$feature"
-  cargo test --verbose --no-default-features --features="$feature"
-done
+# It should build with std (same as default features)
+cargo test --no-default-features --features="std"
+
+# It should build with both serialization library
+cargo test --verbose --features="serde"
+cargo test --verbose --features="rustc-serialize"
+cargo test --verbose --no-default-features --features="serde"
+# cargo test --verbose --no-default-features --features="rustc-serialize"
 
 # Downgrade serde and build test the 0.7.0 channel as well
 cargo update -p serde --precise 0.7.0
-cargo build --verbose --no-default-features --features "serde"
+cargo test --verbose --no-default-features --features "serde"
+cargo test --verbose --no-default-features --features "std serde"
