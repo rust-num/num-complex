@@ -31,7 +31,7 @@ use std::hash;
 use std::ops::{Add, Div, Mul, Neg, Sub, Rem};
 use std::str::FromStr;
 
-use traits::{Zero, One, Num, Float};
+use traits::{Zero, One, Num, Inv, Float};
 
 // FIXME #1284: handle complex NaN & infinity etc. This
 // probably doesn't map to C's _Complex correctly.
@@ -661,6 +661,24 @@ impl<'a, T: Clone + Num + Neg<Output = T>> Neg for &'a Complex<T> {
     #[inline]
     fn neg(self) -> Complex<T> {
         -self.clone()
+    }
+}
+
+impl<T: Clone + Num + Inv<Output = T>> Inv for Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn inv(self) -> Complex<T> {
+        self.inv()
+    }
+}
+
+impl<'a, T: Clone + Num + Inv<Output = T>> Inv for &'a Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn inv(self) -> Complex<T> {
+        self.inv()
     }
 }
 
