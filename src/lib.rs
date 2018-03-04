@@ -664,16 +664,16 @@ impl<'a, T: Clone + Num + Neg<Output = T>> Neg for &'a Complex<T> {
     }
 }
 
-impl<T: Clone + Num + Inv<Output = T>> Inv for Complex<T> {
+impl<T: Clone + Num + Neg<Output = T>> Inv for Complex<T> {
     type Output = Complex<T>;
 
     #[inline]
     fn inv(self) -> Complex<T> {
-        self.inv()
+        (&self).inv()
     }
 }
 
-impl<'a, T: Clone + Num + Inv<Output = T>> Inv for &'a Complex<T> {
+impl<'a, T: Clone + Num + Neg<Output = T>> Inv for &'a Complex<T> {
     type Output = Complex<T>;
 
     #[inline]
