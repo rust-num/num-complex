@@ -26,6 +26,7 @@ use std::fmt;
 #[cfg(test)]
 use std::hash;
 use std::ops::{Add, Div, Mul, Neg, Sub, Rem};
+use std::iter::{Sum, Product};
 use std::str::FromStr;
 
 use traits::{Zero, One, Num, Inv, Float};
@@ -1069,6 +1070,30 @@ impl<T: Num + Clone> Num for Complex<T> {
     }
 }
 
+impl<T: Num + Clone> Sum for Complex<T> {
+    fn sum<I>(iter: I) -> Self where I: Iterator<Item = Self> {
+        iter.fold(Self::zero(), |acc, c| acc + c)
+    }
+}
+
+impl<'a, T: 'a + Num + Clone> Sum<&'a Complex<T>> for Complex<T> {
+    fn sum<I>(iter: I) -> Self where I: Iterator<Item = &'a Complex<T>> {
+        iter.fold(Self::zero(), |acc, c| acc + c)
+    }
+}
+
+impl<T: Num + Clone> Product for Complex<T> {
+    fn product<I>(iter: I) -> Self where I: Iterator<Item = Self> {
+        iter.fold(Self::one(), |acc, c| acc * c)
+    }
+}
+
+impl<'a, T: 'a + Num + Clone> Product<&'a Complex<T>> for Complex<T> {
+    fn product<I>(iter: I) -> Self where I: Iterator<Item = &'a Complex<T>> {
+        iter.fold(Self::one(), |acc, c| acc * c)
+    }
+}
+
 #[cfg(feature = "serde")]
 impl<T> serde::Serialize for Complex<T>
     where T: serde::Serialize
@@ -1916,5 +1941,19 @@ mod test {
         test("4.3j - i");
         test("1i - 2i");
         test("+ 1 - 3.0i");
+    }
+
+    #[test]
+    fn test_sum() {
+        let v = vec![_0_1i, _1_0i];
+        assert_eq!(v.iter().sum::<Complex64>(), _1_1i);
+        assert_eq!(v.into_iter().sum::<Complex64>(), _1_1i);
+    }
+
+    #[test]
+    fn test_prod() {
+        let v = vec![_0_1i, _1_0i];
+        assert_eq!(v.iter().product::<Complex64>(), _0_1i);
+        assert_eq!(v.into_iter().product::<Complex64>(), _0_1i);
     }
 }
