@@ -21,6 +21,9 @@ extern crate num_traits as traits;
 #[cfg(feature = "serde")]
 extern crate serde;
 
+#[cfg(feature = "rand")]
+extern crate rand;
+
 use std::error::Error;
 use std::fmt;
 #[cfg(test)]
@@ -1114,6 +1117,15 @@ impl<'de, T> serde::Deserialize<'de> for Complex<T> where
     {
         let (re, im) = try!(serde::Deserialize::deserialize(deserializer));
         Ok(Complex::new(re, im))
+    }
+}
+
+#[cfg(feature = "rand")]
+impl<T> rand::Rand for Complex<T> where
+    T: rand::Rand + Num + Clone
+{
+    fn rand<R:rand::Rng>(rng: &mut R) -> Self {
+        Self::new(rng.gen::<T>(), rng.gen::<T>())
     }
 }
 
