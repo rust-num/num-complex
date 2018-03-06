@@ -21,6 +21,9 @@ extern crate num_traits as traits;
 #[cfg(feature = "serde")]
 extern crate serde;
 
+mod scalar;
+pub use scalar::Scalar;
+
 use std::error::Error;
 use std::fmt;
 #[cfg(test)]
