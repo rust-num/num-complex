@@ -23,6 +23,10 @@ features = ["std"]
 optional = true
 version = "1.0"
 
+[dependencies.rand]
+optional = true
+version = "= 0.3.14"
+
 [features]
 default = []
 unstable = []
