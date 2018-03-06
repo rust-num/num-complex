@@ -29,7 +29,7 @@ use std::ops::{Add, Div, Mul, Neg, Sub, Rem};
 use std::iter::{Sum, Product};
 use std::str::FromStr;
 
-use traits::{Zero, One, Num, NumAssign, Inv, Float};
+use traits::{Zero, One, Num, Inv, Float};
 
 // FIXME #1284: handle complex NaN & infinity etc. This
 // probably doesn't map to C's _Complex correctly.
@@ -1070,43 +1070,27 @@ impl<T: Num + Clone> Num for Complex<T> {
     }
 }
 
-impl<T: Clone + NumAssign> Sum for Complex<T> {
+impl<T: Num + Clone> Sum for Complex<T> {
     fn sum<I>(iter: I) -> Self where I: Iterator<Item = Self> {
-        let mut s = Self::zero();
-        for c in iter {
-            s += c;
-        }
-        s
+        iter.fold(Self::zero(), |acc, c| acc + c)
     }
 }
 
-impl<'a, T: 'a + Clone + NumAssign> Sum<&'a Complex<T>> for Complex<T> {
+impl<'a, T: 'a + Num + Clone> Sum<&'a Complex<T>> for Complex<T> {
     fn sum<I>(iter: I) -> Self where I: Iterator<Item = &'a Complex<T>> {
-        let mut s = Self::zero();
-        for c in iter {
-            s += c;
-        }
-        s
+        iter.fold(Self::zero(), |acc, c| acc + c)
     }
 }
 
-impl<T: Clone + NumAssign> Product for Complex<T> {
+impl<T: Num + Clone> Product for Complex<T> {
     fn product<I>(iter: I) -> Self where I: Iterator<Item = Self> {
-        let mut s = Self::one();
-        for c in iter {
-            s *= c;
-        }
-        s
+        iter.fold(Self::one(), |acc, c| acc * c)
     }
 }
 
-impl<'a, T: 'a + Clone + NumAssign> Product<&'a Complex<T>> for Complex<T> {
+impl<'a, T: 'a + Num + Clone> Product<&'a Complex<T>> for Complex<T> {
     fn product<I>(iter: I) -> Self where I: Iterator<Item = &'a Complex<T>> {
-        let mut s = Self::one();
-        for c in iter {
-            s *= c;
-        }
-        s
+        iter.fold(Self::one(), |acc, c| acc * c)
     }
 }
 
