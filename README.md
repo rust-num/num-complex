@@ -19,7 +19,7 @@ num-complex = "0.1"
 and this to your crate root:
 
 ```rust
-extern crate num_compex;
+extern crate num_complex;
 ```
 
 ## Releases
