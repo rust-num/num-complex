@@ -4,7 +4,7 @@ description = "Complex numbers implementation for Rust"
 documentation = "https://docs.rs/num-complex"
 homepage = "https://github.com/rust-num/num-complex"
 keywords = ["mathematics", "numerics"]
-categories = [ "algorithms", "data-structures", "science" ]
+categories = ["algorithms", "data-structures", "science", "no-std"]
 license = "MIT/Apache-2.0"
 name = "num-complex"
 repository = "https://github.com/rust-num/num-complex"
@@ -12,21 +12,25 @@ version = "0.2.0-git"
 publish = false
 readme = "README.md"
 
+[package.metadata.docs.rs]
+all-features = true
+
 [dependencies]
 
 [dependencies.num-traits]
 version = "0.2.1"
 default-features = false
-features = ["std"]
 
 [dependencies.serde]
 optional = true
 version = "1.0"
+default-features = false
 
 [dependencies.rand]
 optional = true
 version = "0.4"
+default-features = false
 
 [features]
-default = []
-unstable = []
+default = ["std"]
+std = ["num-traits/std"]
