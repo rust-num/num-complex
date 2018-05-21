@@ -849,7 +849,7 @@ impl<T: Clone + Num> Rem<T> for Complex<T> {
 
     #[inline]
     fn rem(self, other: T) -> Complex<T> {
-        self % Complex::new(other, T::zero())
+        Complex::new(self.re % other.clone(), self.im % other)
     }
 }
 
@@ -1820,6 +1820,14 @@ mod test {
             assert_eq!(3.0 % _4_2i, Complex::new(3.0, 0.0));
 			assert_eq!(_neg1_1i % 2.0, _neg1_1i);
 			assert_eq!(-_4_2i % 3.0, Complex::new(-1.0, -2.0));
+        }
+
+        #[test]
+        fn test_div_rem_gaussian() {
+            // These would overflow with `norm_sqr` division.
+            let max = Complex::new(255u8, 255u8);
+            assert_eq!(max / 200, Complex::new(1, 1));
+            assert_eq!(max % 200, Complex::new(55, 55));
         }
     }
 
