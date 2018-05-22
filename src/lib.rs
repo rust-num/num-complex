@@ -45,6 +45,9 @@ use traits::{Zero, One, Num, Inv};
 use traits::float::Float;
 use traits::float::FloatCore;
 
+#[cfg(feature = "rand")]
+mod crand;
+
 // FIXME #1284: handle complex NaN & infinity etc. This
 // probably doesn't map to C's _Complex correctly.
 
@@ -1158,15 +1161,6 @@ impl<'de, T> serde::Deserialize<'de> for Complex<T> where
     {
         let (re, im) = try!(serde::Deserialize::deserialize(deserializer));
         Ok(Complex::new(re, im))
-    }
-}
-
-#[cfg(feature = "rand")]
-impl<T> rand::Rand for Complex<T> where
-    T: rand::Rand + Num + Clone
-{
-    fn rand<R:rand::Rng>(rng: &mut R) -> Self {
-        Self::new(rng.gen::<T>(), rng.gen::<T>())
     }
 }
 
