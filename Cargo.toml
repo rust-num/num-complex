@@ -14,7 +14,7 @@ readme = "README.md"
 build = "build.rs"
 
 [package.metadata.docs.rs]
-features = ["std"]
+features = ["std", "serde", "rand"]
 
 [dependencies]
 
@@ -29,7 +29,7 @@ default-features = false
 
 [dependencies.rand]
 optional = true
-version = "0.4"
+version = "0.5"
 default-features = false
 
 [features]

@@ -4,8 +4,11 @@ set -ex
 
 echo Testing num-complex on rustc ${TRAVIS_RUST_VERSION}
 
-FEATURES="std rand serde"
-if [[ "$TRAVIS_RUST_VERSION" =~ ^(nightly|beta|stable)$ ]]; then
+FEATURES="std serde"
+if [[ "$TRAVIS_RUST_VERSION" =~ ^(nightly|beta|stable|1.26|1.22)$ ]]; then
+  FEATURES="$FEATURES rand"
+fi
+if [[ "$TRAVIS_RUST_VERSION" =~ ^(nightly|beta|stable|1.26)$ ]]; then
   FEATURES="$FEATURES i128"
 fi
 
