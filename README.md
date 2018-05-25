@@ -2,7 +2,7 @@
 
 [![crate](https://img.shields.io/crates/v/num-complex.svg)](https://crates.io/crates/num-complex)
 [![documentation](https://docs.rs/num-complex/badge.svg)](https://docs.rs/num-complex)
-![minimum rustc 1.8](https://img.shields.io/badge/rustc-1.15+-red.svg)
+![minimum rustc 1.15](https://img.shields.io/badge/rustc-1.15+-red.svg)
 [![Travis status](https://travis-ci.org/rust-num/num-complex.svg?branch=master)](https://travis-ci.org/rust-num/num-complex)
 
 `Complex` numbers for Rust.
