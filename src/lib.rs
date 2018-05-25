@@ -47,6 +47,8 @@ use traits::float::FloatCore;
 
 #[cfg(feature = "rand")]
 mod crand;
+#[cfg(feature = "rand")]
+pub use crand::ComplexDistribution;
 
 // FIXME #1284: handle complex NaN & infinity etc. This
 // probably doesn't map to C's _Complex correctly.
