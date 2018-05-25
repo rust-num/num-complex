@@ -1,10 +1,35 @@
-# Release 0.2.0 (pending)
+# Release 0.2.0
 
-- :warning: [num-complex now requires rustc 1.15 or greater][16].
+### Enhancements
 
-**Contributors**: @cuviper
+- [`Complex` now implements `num_traits::Inv` and `One::is_one`][17].
+- [`Complex` now implements `Sum` and `Product`][11].
+- [`Complex` now supports `i128` and `u128` components][27] with Rust 1.26+.
+- [`Complex` now optionally supports `rand` 0.5][28], implementing the
+  `Standard` distribution and [a generic `ComplexDistribution`][30].
+- [`Rem` with a scalar divisor now avoids `norm_sqr` overflow][25].
 
+### Breaking Changes
+
+- [`num-complex` now requires rustc 1.15 or greater][16].
+- [There is now a `std` feature][22], enabled by default, along with the
+  implication that building *without* this feature makes this a `#![no_std]`
+  crate.  A few methods now require `FloatCore`, and the remaining methods
+  based on `Float` are only supported with `std`.
+- [The `serde` dependency has been updated to 1.0][7], and `rustc-serialize`
+  is no longer supported by `num-complex`.
+
+**Contributors**: @clarcharr, @cuviper, @shingtaklam1324, @termoshtt
+
+[7]: https://github.com/rust-num/num-complex/pull/7
+[11]: https://github.com/rust-num/num-complex/pull/11
 [16]: https://github.com/rust-num/num-complex/pull/16
+[17]: https://github.com/rust-num/num-complex/pull/17
+[22]: https://github.com/rust-num/num-complex/pull/22
+[25]: https://github.com/rust-num/num-complex/pull/25
+[27]: https://github.com/rust-num/num-complex/pull/27
+[28]: https://github.com/rust-num/num-complex/pull/28
+[30]: https://github.com/rust-num/num-complex/pull/30
 
 
 # Release 0.1.43
