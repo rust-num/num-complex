@@ -1,4 +1,4 @@
-# Release 0.2.0
+# Release 0.2.0 (2018-05-24)
 
 ### Enhancements
 
@@ -32,7 +32,7 @@
 [30]: https://github.com/rust-num/num-complex/pull/30
 
 
-# Release 0.1.43
+# Release 0.1.43 (2018-03-08)
 
 - [Fix a usage typo in README.md][20].
 
@@ -41,7 +41,7 @@
 [20]: https://github.com/rust-num/num-complex/pull/20
 
 
-# Release 0.1.42
+# Release 0.1.42 (2018-02-07)
 
 - [num-complex now has its own source repository][num-356] at [rust-num/num-complex][home].
 
