@@ -1,9 +1,9 @@
 //! Rand implementations for complex numbers
 
-use Complex;
 use rand::distributions::Standard;
 use rand::prelude::*;
 use traits::Num;
+use Complex;
 
 impl<T> Distribution<Complex<T>> for Standard
 where
