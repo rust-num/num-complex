@@ -44,6 +44,7 @@ use traits::{Inv, Num, One, Zero};
 use traits::float::Float;
 use traits::float::FloatCore;
 
+mod cast;
 #[cfg(feature = "rand")]
 mod crand;
 #[cfg(feature = "rand")]
