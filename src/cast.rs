@@ -1,5 +1,5 @@
 use super::Complex;
-use traits::{FromPrimitive, Num, NumCast, ToPrimitive, Zero};
+use traits::{AsPrimitive, FromPrimitive, Num, NumCast, ToPrimitive, Zero};
 
 macro_rules! impl_to_primitive {
     ($ty:ty, $to:ident) => {
@@ -67,5 +67,15 @@ impl<T: NumCast + Num> NumCast for Complex<T> {
             re: T::from(n)?,
             im: T::zero(),
         })
+    }
+}
+
+impl<T, U> AsPrimitive<U> for Complex<T>
+where
+    T: AsPrimitive<U>,
+    U: 'static + Copy,
+{
+    fn as_(self) -> U {
+        self.re.as_()
     }
 }
