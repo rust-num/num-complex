@@ -34,10 +34,7 @@ macro_rules! impl_from_primitive {
     ($ty:ty, $from_xx:ident) => {
         #[inline]
         fn $from_xx(n: $ty) -> Option<Self> {
-            Some(Self {
-                re: T::$from_xx(n)?,
-                im: T::zero(),
-            })
+            T::$from_xx(n).map(|re| Complex { re, im: T::zero() })
         }
     };
 } // impl_from_primitive
@@ -63,10 +60,7 @@ impl<T: FromPrimitive + Zero> FromPrimitive for Complex<T> {
 
 impl<T: NumCast + Num> NumCast for Complex<T> {
     fn from<U: ToPrimitive>(n: U) -> Option<Self> {
-        Some(Self {
-            re: T::from(n)?,
-            im: T::zero(),
-        })
+        T::from(n).map(|re| Complex { re, im: T::zero() })
     }
 }
 
