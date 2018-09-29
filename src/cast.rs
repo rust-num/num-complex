@@ -1,12 +1,14 @@
 use super::Complex;
 use traits::{FromPrimitive, Num, ToPrimitive, Zero};
 
-macro_rules! impl_to_primitive { ($ty:ty, $to:ident) => {
-#[inline]
-fn $to(&self) -> Option<$ty> {
-    if self.im == T::zero() { self.re.$to() } else { None }
-}
-}} // impl_to_primitive
+macro_rules! impl_to_primitive {
+    ($ty:ty, $to:ident) => {
+        #[inline]
+        fn $to(&self) -> Option<$ty> {
+            if self.im == T::zero() { self.re.$to() } else { None }
+        }
+    }
+} // impl_to_primitive
 
 // Returns None if Complex part is non-zero
 impl<T: ToPrimitive + Num> ToPrimitive for Complex<T> {
