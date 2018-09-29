@@ -1,5 +1,5 @@
 use super::Complex;
-use traits::{FromPrimitive, Num, ToPrimitive, Zero};
+use traits::{FromPrimitive, Num, NumCast, ToPrimitive, Zero};
 
 macro_rules! impl_to_primitive {
     ($ty:ty, $to:ident) => {
@@ -59,4 +59,13 @@ impl<T: FromPrimitive + Zero> FromPrimitive for Complex<T> {
     impl_from_primitive!(i128, from_i128);
     impl_from_primitive!(f32, from_f32);
     impl_from_primitive!(f64, from_f64);
+}
+
+impl<T: NumCast + Num> NumCast for Complex<T> {
+    fn from<U: ToPrimitive>(n: U) -> Option<Self> {
+        Some(Self {
+            re: T::from(n)?,
+            im: T::zero(),
+        })
+    }
 }
