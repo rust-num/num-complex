@@ -1,5 +1,5 @@
 use super::Complex;
-use traits::{AsPrimitive, FromPrimitive, Num, NumCast, ToPrimitive, Zero};
+use traits::{AsPrimitive, FromPrimitive, Num, NumCast, ToPrimitive};
 
 macro_rules! impl_to_primitive {
     ($ty:ty, $to:ident) => {
@@ -42,7 +42,7 @@ macro_rules! impl_from_primitive {
     };
 } // impl_from_primitive
 
-impl<T: FromPrimitive + Zero> FromPrimitive for Complex<T> {
+impl<T: FromPrimitive + Num> FromPrimitive for Complex<T> {
     impl_from_primitive!(usize, from_usize);
     impl_from_primitive!(isize, from_isize);
     impl_from_primitive!(u8, from_u8);
