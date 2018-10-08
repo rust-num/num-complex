@@ -1,3 +1,11 @@
+# Release 0.2.1 (2018-10-08)
+
+- [`Complex` now implements `ToPrimitive`, `FromPrimitive`, `AsPrimitive`, and `NumCast`][33].
+
+**Contributors**: @cuviper, @termoshtt
+
+[33]: https://github.com/rust-num/num-complex/pull/33
+
 # Release 0.2.0 (2018-05-24)
 
 ### Enhancements
