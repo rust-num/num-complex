@@ -143,6 +143,16 @@ impl<T: Clone + Num + Neg<Output = T>> Complex<T> {
 
 #[cfg(feature = "std")]
 impl<T: Clone + Float> Complex<T> {
+    /// Returns the real part.
+    #[inline]
+    pub fn real(&self) -> T {
+        self.re
+    }
+    /// Returns the imaginary part.
+    #[inline]
+    pub fn imag(&self) -> T {
+        self.re
+    }
     /// Calculate |self|
     #[inline]
     pub fn norm(&self) -> T {
