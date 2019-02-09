@@ -151,7 +151,7 @@ impl<T: Clone + Float> Complex<T> {
     /// Returns the imaginary part.
     #[inline]
     pub fn imag(&self) -> T {
-        self.re
+        self.im
     }
     /// Calculate |self|
     #[inline]
