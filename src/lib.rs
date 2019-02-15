@@ -43,6 +43,7 @@ use traits::{Inv, Num, One, Zero};
 #[cfg(feature = "std")]
 use traits::float::Float;
 use traits::float::FloatCore;
+use traits::float::CommonFloat;
 
 mod cast;
 #[cfg(feature = "rand")]
@@ -229,6 +230,12 @@ impl<T: Clone + Float> Complex<T> {
         // = log_y(ρ) + i θ / ln(y)
         let (r, theta) = self.to_polar();
         Complex::new(r.log(base), theta / base.ln())
+    }
+
+    /// Returns the logarithm of `self` with respect to an arbitrary base.
+    #[inline]
+    pub fn logc(&self, base: Complex<T>) -> Complex<T> {
+        self.ln() / base.ln()
     }
 
     /// Raises `self` to a complex power.
@@ -911,6 +918,108 @@ impl<T: Clone + Num> One for Complex<T> {
     #[inline]
     fn is_one(&self) -> bool {
         self.re.is_one() && self.im.is_zero()
+    }
+}
+
+impl<T: Float + FloatCore> CommonFloat for Complex<T> {
+    type Typo = T;
+
+    fn abs(self) -> T {
+        self.norm()
+    }
+    fn arg(self) -> T {
+        Complex::arg(&self)
+    }
+    fn real(self) -> T {
+        self.re
+    }
+    fn imag(self) -> T {
+        self.im
+    }
+    fn mul_add(self, a: Self, b: Self) -> Complex<T> {
+        (self * a) + b
+    }
+    fn recip(self) -> Complex<T> {
+        self.inv()
+    }
+    fn pown(self, ind: Self) -> Complex<T> {
+        self.powc(ind)
+    }
+    fn sqrt(self) -> Complex<T> {
+        Complex::sqrt(&self)
+    }
+    fn exp(self) -> Complex<T> {
+        Complex::exp(&self)
+    }
+    fn exp2(self) -> Complex<T> {
+        let lt = Complex::from(T::from(2).unwrap());
+        (self * lt).exp()
+    }
+    fn ln(self) -> Complex<T> {
+        Complex::ln(&self)
+    }
+    fn log(self, base: Self) -> Complex<T> {
+        Complex::logc(&self, base)
+    }
+    fn log2(self) -> Complex<T> {
+        let t = Complex::from(T::from(2).unwrap());
+        self.log(t)
+    }
+    fn log10(self) -> Complex<T> {
+        let s = Complex::from(T::from(10).unwrap());
+        self.log(s)
+    }
+    fn cbrt(self) -> Complex<T> {
+        let t = Complex::from(T::from(3).unwrap());
+        (self.ln() / t).exp()
+    }
+    fn sin(self) -> Complex<T> {
+        Complex::sin(&self)
+    }
+    fn cos(self) -> Complex<T> {
+        Complex::cos(&self)
+    }
+    fn tan(self) -> Complex<T> {
+        Complex::tan(&self)
+    }
+    fn asin(self) -> Complex<T> {
+        Complex::asin(&self)
+    }
+    fn acos(self) -> Complex<T> {
+        Complex::acos(&self)
+    }
+    fn atan(self) -> Complex<T> {
+        Complex::atan(&self)
+    }
+    fn sinh(self) -> Complex<T> {
+        Complex::sinh(&self)
+    }
+    fn cosh(self) -> Complex<T> {
+        Complex::cosh(&self)
+    }
+    fn tanh(self) -> Complex<T> {
+        Complex::tanh(&self)
+    }
+    fn asinh(self) -> Complex<T> {
+        Complex::asinh(&self)
+    }
+    fn acosh(self) -> Complex<T> {
+        Complex::acosh(&self)
+    }
+    fn atanh(self) -> Complex<T> {
+        Complex::atanh(&self)
+    }
+    fn is_finite(self) -> bool {
+        Complex::is_finite(self)
+    }
+    fn is_infinite(self) -> bool {
+        Complex::is_infinite(self)
+    }
+    fn is_nan(self) -> bool {
+        Complex::is_nan(self)
+    }
+    fn is_normal(self) -> bool {
+        Complex::is_normal(self)
     }
 }
 
