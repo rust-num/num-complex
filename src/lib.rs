@@ -952,7 +952,7 @@ impl<T: Float + FloatCore> CommonFloat for Complex<T> {
         Complex::exp(&self)
     }
     fn exp2(self) -> Complex<T> {
-        let lt = Complex::from(T::from(2).unwrap());
+        let lt = Complex::from(T::from(2).unwrap().ln());
         (self * lt).exp()
     }
     fn ln(self) -> Complex<T> {
