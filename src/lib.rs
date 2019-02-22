@@ -414,6 +414,62 @@ impl<T: Clone + Float> Complex<T> {
         }
         ((one + self).ln() - (one - self).ln()) / two
     }
+
+    /// Returns `1/self` using floating-point operations.
+    ///
+    /// This may be more accurate than the generic `self.inv()` in cases
+    /// where `self.norm_sqr()` would overflow to ∞ or underflow to 0.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use num_complex::Complex64;
+    /// let c = Complex64::new(1e300, 1e300);
+    ///
+    /// // The generic `inv()` will overflow.
+    /// assert!(!c.inv().is_normal());
+    ///
+    /// // But we can do better for `Float` types.
+    /// let inv = c.finv();
+    /// assert!(inv.is_normal());
+    /// println!("{:e}", inv);
+    ///
+    /// let expected = Complex64::new(5e-301, -5e-301);
+    /// assert!((inv - expected).norm() < 1e-315);
+    /// ```
+    #[inline]
+    pub fn finv(&self) -> Complex<T> {
+        let norm = self.norm();
+        self.conj() / norm / norm
+    }
+
+    /// Returns `self/other` using floating-point operations.
+    ///
+    /// This may be more accurate than the generic `Div` implementation in cases
+    /// where `other.norm_sqr()` would overflow to ∞ or underflow to 0.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use num_complex::Complex64;
+    /// let a = Complex64::new(2.0, 3.0);
+    /// let b = Complex64::new(1e300, 1e300);
+    ///
+    /// // Generic division will overflow.
+    /// assert!(!(a / b).is_normal());
+    ///
+    /// // But we can do better for `Float` types.
+    /// let quotient = a.fdiv(b);
+    /// assert!(quotient.is_normal());
+    /// println!("{:e}", quotient);
+    ///
+    /// let expected = Complex64::new(2.5e-300, 5e-301);
+    /// assert!((quotient - expected).norm() < 1e-315);
+    /// ```
+    #[inline]
+    pub fn fdiv(&self, other: Complex<T>) -> Complex<T> {
+        self * other.finv()
+    }
 }
 
 impl<T: Clone + FloatCore> Complex<T> {
