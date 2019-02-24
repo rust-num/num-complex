@@ -133,11 +133,7 @@ impl<T: Clone + Num + Neg<Output = T>> Complex<T> {
     /// Returns `1/self`
     #[inline]
     pub fn inv(&self) -> Self {
-        let norm_sqr = self.norm_sqr();
-        Self::new(
-            self.re.clone() / norm_sqr.clone(),
-            -self.im.clone() / norm_sqr,
-        )
+        self.conj().unscale(self.norm_sqr())
     }
 }
 
@@ -479,10 +475,10 @@ macro_rules! forward_ref_val_binop {
 macro_rules! forward_val_ref_binop {
     (impl $imp:ident, $method:ident) => {
         impl<'a, T: Clone + Num> $imp<&'a Complex<T>> for Complex<T> {
-            type Output = Complex<T>;
+            type Output = Self;
 
             #[inline]
-            fn $method(self, other: &Complex<T>) -> Self::Output {
+            fn $method(self, other: &Self) -> Self::Output {
                 self.$method(other.clone())
             }
         }
@@ -745,7 +741,7 @@ macro_rules! real_arithmetic {
                 type Output = Complex<$real>;
 
                 #[inline]
-                fn $method(self, other: &Complex<$real>) -> Complex<$real> {
+                fn $method(self, other: &Complex<$real>) -> Self::Output {
                     self.$method(other.clone())
                 }
             }
@@ -753,7 +749,7 @@ macro_rules! real_arithmetic {
                 type Output = Complex<$real>;
 
                 #[inline]
-                fn $method(self, other: Complex<$real>) -> Complex<$real> {
+                fn $method(self, other: Complex<$real>) -> Self::Output {
                     self.clone().$method(other)
                 }
             }
@@ -761,7 +757,7 @@ macro_rules! real_arithmetic {
                 type Output = Complex<$real>;
 
                 #[inline]
-                fn $method(self, other: &Complex<$real>) -> Complex<$real> {
+                fn $method(self, other: &Complex<$real>) -> Self::Output {
                     self.clone().$method(other.clone())
                 }
             }
@@ -827,7 +823,7 @@ macro_rules! real_arithmetic {
 }
 
 impl<T: Clone + Num> Add<T> for Complex<T> {
-    type Output = Complex<T>;
+    type Output = Self;
 
     #[inline]
     fn add(self, other: T) -> Self::Output {
@@ -836,7 +832,7 @@ impl<T: Clone + Num> Add<T> for Complex<T> {
 }
 
 impl<T: Clone + Num> Sub<T> for Complex<T> {
-    type Output = Complex<T>;
+    type Output = Self;
 
     #[inline]
     fn sub(self, other: T) -> Self::Output {
