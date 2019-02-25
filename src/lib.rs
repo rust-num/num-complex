@@ -430,6 +430,12 @@ impl<T: Clone + FloatCore> Complex<T> {
     pub fn is_normal(self) -> bool {
         self.re.is_normal() && self.im.is_normal()
     }
+
+    /// Absolute value `re + im`.
+    #[inline]
+    pub fn abs(&self) -> T {
+        self.re.clone().abs() + self.im.clone().abs()
+    }
 }
 
 impl<T: Clone + Num> From<T> for Complex<T> {
@@ -1360,6 +1366,17 @@ mod test {
     fn test_inv_zero() {
         // FIXME #20: should this really fail, or just NaN?
         assert!(_0_0i.inv().is_nan());
+    }
+
+    #[test]
+    fn test_abs() {
+        assert_eq!(_0_0i.abs(), 0.0);
+        assert_eq!(_1_0i.abs(), 1.0);
+        assert_eq!(_1_1i.abs(), 2.0);
+        assert_eq!(_0_1i.abs(), 1.0);
+        assert_eq!(_neg1_1i.abs(), 2.0);
+        assert_eq!(_05_05i.abs(), 1.0);
+        assert_eq!(_4_2i.abs(), 6.0);
     }
 
     #[cfg(feature = "std")]
