@@ -38,7 +38,7 @@ use core::str::FromStr;
 #[cfg(feature = "std")]
 use std::error::Error;
 
-use traits::{Inv, Num, One, Signed, Zero};
+use traits::{Inv, MulAdd, Num, One, Signed, Zero};
 
 #[cfg(feature = "std")]
 use traits::float::Float;
@@ -602,6 +602,27 @@ impl<T: Clone + Num> Mul<Complex<T>> for Complex<T> {
     }
 }
 
+// (a + i b) * (c + i d) + (e + i f) == ((a*c + e) - b*d) + i (a*d + (b*c + f))
+impl<T: Clone + Num + MulAdd<Output = T>> MulAdd<Complex<T>> for Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn mul_add(self, other: Complex<T>, add: Complex<T>) -> Complex<T> {
+        let re = self.re.clone().mul_add(other.re.clone(), add.re.clone())
+            - self.im.clone() * other.im.clone(); // FIXME: use mulsub when available in rust
+        let im = self.re.mul_add(other.im, self.im.mul_add(other.re, add.im));
+        Complex::new(re, im)
+    }
+}
+impl<'a, 'b, T: Clone + Num + MulAdd<Output = T>> MulAdd<&'b Complex<T>> for &'a Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn mul_add(self, other: &Complex<T>, add: &Complex<T>) -> Complex<T> {
+        self.clone().mul_add(other.clone(), add.clone())
+    }
+}
+
 forward_all_binop!(impl Div, div);
 
 // (a + i b) / (c + i d) == [(a + i b) * (c - i d)] / (c*c + d*d)
@@ -640,7 +661,7 @@ impl<T: Clone + Num> Rem<Complex<T>> for Complex<T> {
 mod opassign {
     use core::ops::{AddAssign, DivAssign, MulAssign, RemAssign, SubAssign};
 
-    use traits::NumAssign;
+    use traits::{MulAddAssign, NumAssign};
 
     use Complex;
 
@@ -661,6 +682,28 @@ mod opassign {
     impl<T: Clone + NumAssign> MulAssign for Complex<T> {
         fn mul_assign(&mut self, other: Self) {
             *self = self.clone() * other;
+        }
+    }
+
+    impl<T: Clone + NumAssign + MulAddAssign> MulAddAssign for Complex<T> {
+        fn mul_add_assign(&mut self, other: Complex<T>, add: Complex<T>) {
+            let mut re = self.re.clone();
+            let mut im = self.im.clone();
+
+            self.re.mul_add_assign(other.re.clone(), add.re.clone()); // (a*c + e)
+            self.re -= im.clone() * other.im.clone(); // ((a*c + e) - b*d) + i
+
+            im.mul_add_assign(other.re, add.im); // (b*c + f)
+            re.mul_add_assign(other.im, im); // a*d
+            self.im = re; // (a*d + (b*c + f))
+        }
+    }
+
+    impl<'a, 'b, T: Clone + NumAssign + MulAddAssign> MulAddAssign<&'a Complex<T>, &'b Complex<T>>
+        for Complex<T>
+    {
+        fn mul_add_assign(&mut self, other: &Complex<T>, add: &Complex<T>) {
+            self.mul_add_assign(other.clone(), add.clone());
         }
     }
 
@@ -1959,7 +2002,7 @@ mod test {
 
     mod complex_arithmetic {
         use super::{_05_05i, _0_0i, _0_1i, _1_0i, _1_1i, _4_2i, _neg1_1i, all_consts};
-        use traits::Zero;
+        use traits::{MulAdd, MulAddAssign, Zero};
 
         #[test]
         fn test_add() {
@@ -1998,6 +2041,40 @@ mod test {
                 test_op!(c * _1_0i, c);
                 test_op!(_1_0i * c, c);
             }
+        }
+
+        #[test]
+        #[cfg(feature = "std")]
+        fn test_mul_add_float() {
+            assert_eq!(_05_05i.mul_add(_05_05i, _0_0i), _05_05i * _05_05i + _0_0i);
+            assert_eq!(_05_05i * _05_05i + _0_0i, _05_05i.mul_add(_05_05i, _0_0i));
+            assert_eq!(_0_1i.mul_add(_0_1i, _0_1i), _neg1_1i);
+            assert_eq!(_1_0i.mul_add(_1_0i, _1_0i), _1_0i * _1_0i + _1_0i);
+            assert_eq!(_1_0i * _1_0i + _1_0i, _1_0i.mul_add(_1_0i, _1_0i));
+
+            let mut x = _1_0i;
+            x.mul_add_assign(_1_0i, _1_0i);
+            assert_eq!(x, _1_0i * _1_0i + _1_0i)
+        }
+
+        #[test]
+        fn test_mul_add() {
+            use super::Complex;
+            const _0_0i: Complex<i32> = Complex { re: 0, im: 0 };
+            const _1_0i: Complex<i32> = Complex { re: 1, im: 0 };
+            const _1_1i: Complex<i32> = Complex { re: 1, im: 1 };
+            const _0_1i: Complex<i32> = Complex { re: 0, im: 1 };
+            const _neg1_1i: Complex<i32> = Complex { re: -1, im: 1 };
+
+            assert_eq!(_1_0i.mul_add(_1_0i, _0_0i), _1_0i * _1_0i + _0_0i);
+            assert_eq!(_1_0i * _1_0i + _0_0i, _1_0i.mul_add(_1_0i, _0_0i));
+            assert_eq!(_0_1i.mul_add(_0_1i, _0_1i), _neg1_1i);
+            assert_eq!(_1_0i.mul_add(_1_0i, _1_0i), _1_0i * _1_0i + _1_0i);
+            assert_eq!(_1_0i * _1_0i + _1_0i, _1_0i.mul_add(_1_0i, _1_0i));
+
+            let mut x = _1_0i;
+            x.mul_add_assign(_1_0i, _1_0i);
+            assert_eq!(x, _1_0i * _1_0i + _1_0i)
         }
 
         #[test]
