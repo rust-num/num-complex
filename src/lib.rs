@@ -38,7 +38,7 @@ use core::str::FromStr;
 #[cfg(feature = "std")]
 use std::error::Error;
 
-use traits::{Inv, Num, One, Zero};
+use traits::{Inv, Num, One, Zero, Signed};
 
 #[cfg(feature = "std")]
 use traits::float::Float;
@@ -138,6 +138,14 @@ impl<T: Clone + Num + Neg<Output = T>> Complex<T> {
             self.re.clone() / norm_sqr.clone(),
             -self.im.clone() / norm_sqr,
         )
+    }
+}
+
+impl<T: Clone + Signed> Complex<T> {
+    /// Returns the [Manhattan distance](https://en.wikipedia.org/wiki/Taxicab_geometry) `re + im`.
+    #[inline]
+    pub fn l1_norm(&self) -> T {
+        self.re.clone().abs() + self.im.clone().abs()
     }
 }
 
@@ -433,12 +441,6 @@ impl<T: Clone + FloatCore> Complex<T> {
     #[inline]
     pub fn is_normal(self) -> bool {
         self.re.is_normal() && self.im.is_normal()
-    }
-
-    /// Absolute value `re + im`.
-    #[inline]
-    pub fn abs(&self) -> T {
-        self.re.clone().abs() + self.im.clone().abs()
     }
 }
 
@@ -1376,14 +1378,14 @@ mod test {
     }
 
     #[test]
-    fn test_abs() {
-        assert_eq!(_0_0i.abs(), 0.0);
-        assert_eq!(_1_0i.abs(), 1.0);
-        assert_eq!(_1_1i.abs(), 2.0);
-        assert_eq!(_0_1i.abs(), 1.0);
-        assert_eq!(_neg1_1i.abs(), 2.0);
-        assert_eq!(_05_05i.abs(), 1.0);
-        assert_eq!(_4_2i.abs(), 6.0);
+    fn test_l1_norm() {
+        assert_eq!(_0_0i.l1_norm(), 0.0);
+        assert_eq!(_1_0i.l1_norm(), 1.0);
+        assert_eq!(_1_1i.l1_norm(), 2.0);
+        assert_eq!(_0_1i.l1_norm(), 1.0);
+        assert_eq!(_neg1_1i.l1_norm(), 2.0);
+        assert_eq!(_05_05i.l1_norm(), 1.0);
+        assert_eq!(_4_2i.l1_norm(), 6.0);
     }
 
     #[cfg(feature = "std")]
