@@ -138,7 +138,9 @@ impl<T: Clone + Num + Neg<Output = T>> Complex<T> {
 }
 
 impl<T: Clone + Signed> Complex<T> {
-    /// Returns the [Manhattan distance](https://en.wikipedia.org/wiki/Taxicab_geometry) `re + im`.
+    /// Returns the L1 norm `|re| + |im|` -- the [Manhattan distance] from the origin.
+    ///
+    /// [Manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry
     #[inline]
     pub fn l1_norm(&self) -> T {
         self.re.abs() + self.im.abs()
