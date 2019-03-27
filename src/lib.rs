@@ -145,7 +145,7 @@ impl<T: Clone + Signed> Complex<T> {
     /// Returns the [Manhattan distance](https://en.wikipedia.org/wiki/Taxicab_geometry) `re + im`.
     #[inline]
     pub fn l1_norm(&self) -> T {
-        self.re.clone().abs() + self.im.clone().abs()
+        self.re.abs() + self.im.abs()
     }
 }
 
