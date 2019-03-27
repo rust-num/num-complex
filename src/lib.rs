@@ -38,7 +38,7 @@ use core::str::FromStr;
 #[cfg(feature = "std")]
 use std::error::Error;
 
-use traits::{Inv, Num, One, Zero, Signed};
+use traits::{Inv, Num, One, Signed, Zero};
 
 #[cfg(feature = "std")]
 use traits::float::Float;
