@@ -38,7 +38,7 @@ use core::str::FromStr;
 #[cfg(feature = "std")]
 use std::error::Error;
 
-use traits::{Inv, Num, One, Zero};
+use traits::{Inv, Num, One, Signed, Zero};
 
 #[cfg(feature = "std")]
 use traits::float::Float;
@@ -138,6 +138,16 @@ impl<T: Clone + Num + Neg<Output = T>> Complex<T> {
             self.re.clone() / norm_sqr.clone(),
             -self.im.clone() / norm_sqr,
         )
+    }
+}
+
+impl<T: Clone + Signed> Complex<T> {
+    /// Returns the L1 norm `|re| + |im|` -- the [Manhattan distance] from the origin.
+    ///
+    /// [Manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry
+    #[inline]
+    pub fn l1_norm(&self) -> T {
+        self.re.abs() + self.im.abs()
     }
 }
 
@@ -1367,6 +1377,17 @@ mod test {
     fn test_inv_zero() {
         // FIXME #20: should this really fail, or just NaN?
         assert!(_0_0i.inv().is_nan());
+    }
+
+    #[test]
+    fn test_l1_norm() {
+        assert_eq!(_0_0i.l1_norm(), 0.0);
+        assert_eq!(_1_0i.l1_norm(), 1.0);
+        assert_eq!(_1_1i.l1_norm(), 2.0);
+        assert_eq!(_0_1i.l1_norm(), 1.0);
+        assert_eq!(_neg1_1i.l1_norm(), 2.0);
+        assert_eq!(_05_05i.l1_norm(), 1.0);
+        assert_eq!(_4_2i.l1_norm(), 6.0);
     }
 
     #[cfg(feature = "std")]
