@@ -786,7 +786,7 @@ macro_rules! real_arithmetic {
 
                 #[inline]
                 fn add(self, other: Complex<$real>) -> Self::Output {
-                    Self::Output ::new(self + other.re, other.im)
+                    Self::Output::new(self + other.re, other.im)
                 }
             }
 
