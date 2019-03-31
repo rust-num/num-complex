@@ -94,7 +94,7 @@ impl<T: Clone + Num> Complex<T> {
     /// Create a new Complex
     #[inline]
     pub fn new(re: T, im: T) -> Self {
-        Self { re: re, im: im }
+        Self { re, im }
     }
 
     /// Returns imaginary unit
