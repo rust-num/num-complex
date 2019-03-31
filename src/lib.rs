@@ -94,7 +94,7 @@ impl<T: Clone + Num> Complex<T> {
     /// Create a new Complex
     #[inline]
     pub fn new(re: T, im: T) -> Self {
-        Complex { re: re, im: im }
+        Self { re: re, im: im }
     }
 
     /// Returns imaginary unit
@@ -438,7 +438,7 @@ impl<T: Clone + Float> Complex<T> {
     /// assert!((inv - expected).norm() < 1e-315);
     /// ```
     #[inline]
-    pub fn finv(&self) -> Complex<T> {
+    pub fn finv(&self) -> Self {
         let norm = self.norm();
         self.conj() / norm / norm
     }
@@ -467,7 +467,7 @@ impl<T: Clone + Float> Complex<T> {
     /// assert!((quotient - expected).norm() < 1e-315);
     /// ```
     #[inline]
-    pub fn fdiv(&self, other: Complex<T>) -> Complex<T> {
+    pub fn fdiv(&self, other: Self) -> Self {
         self * other.finv()
     }
 }
