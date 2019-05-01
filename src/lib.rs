@@ -1164,6 +1164,7 @@ where
     }
 }
 
+#[allow(deprecated)] // `trim_left_matches` and `trim_right_matches` since 1.33
 fn from_str_generic<T, E, F>(s: &str, from: F) -> Result<Complex<T>, ParseComplexError<E>>
 where
     F: Fn(&str) -> Result<T, E>,
