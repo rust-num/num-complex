@@ -11,6 +11,7 @@ repository = "https://github.com/rust-num/num-complex"
 version = "0.2.1"
 readme = "README.md"
 build = "build.rs"
+exclude = ["/ci/*", "/.travis.yml", "/bors.toml"]
 
 [package.metadata.docs.rs]
 features = ["std", "serde", "rand"]
