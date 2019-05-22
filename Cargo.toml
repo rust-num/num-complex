@@ -38,4 +38,4 @@ i128 = ["num-traits/i128"]
 std = ["num-traits/std"]
 
 [build-dependencies]
-autocfg = "0.1.2"
+autocfg = "0.1.3"
