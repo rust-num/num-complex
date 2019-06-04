@@ -996,6 +996,12 @@ impl<T: Clone + Num> Zero for Complex<T> {
     fn is_zero(&self) -> bool {
         self.re.is_zero() && self.im.is_zero()
     }
+
+    #[inline]
+    fn set_zero(&mut self) {
+        self.re.set_zero();
+        self.im.set_zero();
+    }
 }
 
 impl<T: Clone + Num> One for Complex<T> {
@@ -1007,6 +1013,12 @@ impl<T: Clone + Num> One for Complex<T> {
     #[inline]
     fn is_one(&self) -> bool {
         self.re.is_one() && self.im.is_zero()
+    }
+
+    #[inline]
+    fn set_one(&mut self) {
+        self.re.set_one();
+        self.im.set_zero();
     }
 }
 
@@ -2383,5 +2395,31 @@ mod test {
         let v = vec![_0_1i, _1_0i];
         assert_eq!(v.iter().product::<Complex64>(), _0_1i);
         assert_eq!(v.into_iter().product::<Complex64>(), _0_1i);
+    }
+
+    #[test]
+    fn test_zero() {
+        let zero = Complex64::zero();
+        assert!(zero.is_zero());
+
+        let mut c = Complex::new(1.23, 4.56);
+        assert!(!c.is_zero());
+        assert_eq!(&c + &zero, c);
+
+        c.set_zero();
+        assert!(c.is_zero());
+    }
+
+    #[test]
+    fn test_one() {
+        let one = Complex64::one();
+        assert!(one.is_one());
+
+        let mut c = Complex::new(1.23, 4.56);
+        assert!(!c.is_one());
+        assert_eq!(&c * &one, c);
+
+        c.set_one();
+        assert!(c.is_one());
     }
 }
