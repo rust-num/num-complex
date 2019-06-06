@@ -1523,7 +1523,7 @@ mod test {
     #[cfg(feature = "std")]
     mod float {
         use super::*;
-        use traits::Float;
+        use traits::{Float, Pow};
 
         #[test]
         #[cfg_attr(target_arch = "x86", ignore)]
@@ -1629,9 +1629,11 @@ mod test {
 
         #[test]
         fn test_powf() {
-            let c = Complex::new(2.0, -1.0);
-            let r = c.powf(3.5);
-            assert!(close_to_tol(r, Complex::new(-0.8684746, -16.695934), 1e-5));
+            let c = Complex64::new(2.0, -1.0);
+            let expected = Complex64::new(-0.8684746, -16.695934);
+            assert!(close_to_tol(c.powf(3.5), expected, 1e-5));
+            assert!(close_to_tol(Pow::pow(c, 3.5_f64), expected, 1e-5));
+            assert!(close_to_tol(Pow::pow(c, 3.5_f32), expected, 1e-5));
         }
 
         #[test]

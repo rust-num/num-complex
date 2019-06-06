@@ -1,7 +1,9 @@
 use super::Complex;
 
-use std::ops::Neg;
-use traits::{Float, Num, One, Pow};
+use core::ops::Neg;
+#[cfg(feature = "std")]
+use traits::Float;
+use traits::{Num, One, Pow};
 
 macro_rules! pow_impl {
     ($U:ty, $S:ty) => {
@@ -77,25 +79,109 @@ pow_impl!(usize, isize);
 #[cfg(has_i128)]
 pow_impl!(u128, i128);
 
-// Note: the impls above are for `&Complex<T>`, while those below are for `Complex<T>`.  This is
-// fine since `Float: Copy` anyway, but it's also necessary to avoid conflicting implementations.
-// Otherwise rustc would insist that those `Pow<{integer}>` impls could overlap with `Pow<T>` if
-// integers ever implement `Float`, though of course we know they won't...
+// Note: we can't add `impl<T: Float> Pow<T> for Complex<T>` because new blanket impls are a
+// breaking change.  Someone could already have their own `F` and `impl Pow<F> for Complex<F>`
+// which would conflict.  We can't even do this in a new semantic version, because we have to
+// gate it on the "std" feature, and features can't add breaking changes either.
 
-impl<T: Float> Pow<T> for Complex<T> {
+macro_rules! powf_impl {
+    ($F:ty) => {
+        #[cfg(feature = "std")]
+        impl<'a, T: Float> Pow<$F> for &'a Complex<T>
+        where
+            $F: Into<T>,
+        {
+            type Output = Complex<T>;
+
+            #[inline]
+            fn pow(self, exp: $F) -> Self::Output {
+                self.powf(exp.into())
+            }
+        }
+
+        #[cfg(feature = "std")]
+        impl<'a, 'b, T: Float> Pow<&'b $F> for &'a Complex<T>
+        where
+            $F: Into<T>,
+        {
+            type Output = Complex<T>;
+
+            #[inline]
+            fn pow(self, &exp: &$F) -> Self::Output {
+                self.powf(exp.into())
+            }
+        }
+
+        #[cfg(feature = "std")]
+        impl<T: Float> Pow<$F> for Complex<T>
+        where
+            $F: Into<T>,
+        {
+            type Output = Complex<T>;
+
+            #[inline]
+            fn pow(self, exp: $F) -> Self::Output {
+                self.powf(exp.into())
+            }
+        }
+
+        #[cfg(feature = "std")]
+        impl<'b, T: Float> Pow<&'b $F> for Complex<T>
+        where
+            $F: Into<T>,
+        {
+            type Output = Complex<T>;
+
+            #[inline]
+            fn pow(self, &exp: &$F) -> Self::Output {
+                self.powf(exp.into())
+            }
+        }
+    };
+}
+
+powf_impl!(f32);
+powf_impl!(f64);
+
+// These blanket impls are OK, because both the target type and the trait parameter would be
+// foreign to anyone else trying to implement something that would overlap, raising E0117.
+
+#[cfg(feature = "std")]
+impl<'a, T: Float> Pow<Complex<T>> for &'a Complex<T> {
     type Output = Complex<T>;
 
     #[inline]
-    fn pow(self, exp: T) -> Self::Output {
-        self.powf(exp)
+    fn pow(self, exp: Complex<T>) -> Self::Output {
+        self.powc(exp)
     }
 }
 
+#[cfg(feature = "std")]
+impl<'a, 'b, T: Float> Pow<&'b Complex<T>> for &'a Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn pow(self, &exp: &'b Complex<T>) -> Self::Output {
+        self.powc(exp)
+    }
+}
+
+#[cfg(feature = "std")]
 impl<T: Float> Pow<Complex<T>> for Complex<T> {
     type Output = Complex<T>;
 
     #[inline]
     fn pow(self, exp: Complex<T>) -> Self::Output {
+        self.powc(exp)
+    }
+}
+
+#[cfg(feature = "std")]
+impl<'b, T: Float> Pow<&'b Complex<T>> for Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn pow(self, &exp: &'b Complex<T>) -> Self::Output {
         self.powc(exp)
     }
 }
