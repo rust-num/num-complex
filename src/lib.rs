@@ -38,13 +38,15 @@ use core::str::FromStr;
 #[cfg(feature = "std")]
 use std::error::Error;
 
-use traits::{Inv, MulAdd, Num, One, Signed, Zero};
+use traits::{Inv, MulAdd, Num, One, Pow, Signed, Zero};
 
 #[cfg(feature = "std")]
 use traits::float::Float;
 use traits::float::FloatCore;
 
 mod cast;
+mod pow;
+
 #[cfg(feature = "rand")]
 mod crand;
 #[cfg(feature = "rand")]
@@ -121,6 +123,12 @@ impl<T: Clone + Num> Complex<T> {
     pub fn unscale(&self, t: T) -> Self {
         Self::new(self.re.clone() / t.clone(), self.im.clone() / t)
     }
+
+    /// Raises `self` to an unsigned integer power.
+    #[inline]
+    pub fn powu(&self, exp: u32) -> Self {
+        Pow::pow(self, exp)
+    }
 }
 
 impl<T: Clone + Num + Neg<Output = T>> Complex<T> {
@@ -138,6 +146,12 @@ impl<T: Clone + Num + Neg<Output = T>> Complex<T> {
             self.re.clone() / norm_sqr.clone(),
             -self.im.clone() / norm_sqr,
         )
+    }
+
+    /// Raises `self` to a signed integer power.
+    #[inline]
+    pub fn powi(&self, exp: i32) -> Self {
+        Pow::pow(self, exp)
     }
 }
 
@@ -1499,10 +1513,29 @@ mod test {
         assert_eq!(_4_2i.l1_norm(), 6.0);
     }
 
+    #[test]
+    fn test_pow() {
+        for c in all_consts.iter() {
+            assert_eq!(c.powi(0), _1_0i);
+            let mut pos = _1_0i;
+            let mut neg = _1_0i;
+            for i in 1i32..20 {
+                pos *= c;
+                assert_eq!(pos, c.powi(i));
+                if c.is_zero() {
+                    assert!(c.powi(-i).is_nan());
+                } else {
+                    neg /= c;
+                    assert_eq!(neg, c.powi(-i));
+                }
+            }
+        }
+    }
+
     #[cfg(feature = "std")]
     mod float {
         use super::*;
-        use traits::Float;
+        use traits::{Float, Pow};
 
         #[test]
         #[cfg_attr(target_arch = "x86", ignore)]
@@ -1547,7 +1580,11 @@ mod test {
 
         fn close_to_tol(a: Complex64, b: Complex64, tol: f64) -> bool {
             // returns true if a and b are reasonably close
-            (a == b) || (a - b).norm() < tol
+            let close = (a == b) || (a - b).norm() < tol;
+            if !close {
+                println!("{:?} != {:?}", a, b);
+            }
+            close
         }
 
         #[test]
@@ -1604,9 +1641,11 @@ mod test {
 
         #[test]
         fn test_powf() {
-            let c = Complex::new(2.0, -1.0);
-            let r = c.powf(3.5);
-            assert!(close_to_tol(r, Complex::new(-0.8684746, -16.695934), 1e-5));
+            let c = Complex64::new(2.0, -1.0);
+            let expected = Complex64::new(-0.8684746, -16.695934);
+            assert!(close_to_tol(c.powf(3.5), expected, 1e-5));
+            assert!(close_to_tol(Pow::pow(c, 3.5_f64), expected, 1e-5));
+            assert!(close_to_tol(Pow::pow(c, 3.5_f32), expected, 1e-5));
         }
 
         #[test]
