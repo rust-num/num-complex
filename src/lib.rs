@@ -239,6 +239,59 @@ impl<T: Clone + Float> Complex<T> {
         }
     }
 
+    /// Computes the principal value of the cube root of `self`.
+    ///
+    /// This function has one branch cut:
+    ///
+    /// * `(-∞, 0)`, continuous from above.
+    ///
+    /// The branch satisfies `-π/3 ≤ arg(cbrt(z)) ≤ π/3`.
+    ///
+    /// Note that this does not match the usual result for the cube root of
+    /// negative real numbers. For example, the real cube root of `-8` is `-2`,
+    /// but the principal complex cube root of `-8` is `1 + i√3`.
+    #[inline]
+    pub fn cbrt(&self) -> Self {
+        if self.im.is_zero() {
+            if self.re.is_sign_positive() {
+                // simple positive real ∛r, and copy `im` for its sign
+                Self::new(self.re.cbrt(), self.im)
+            } else {
+                // ∛(r e^(iπ)) = ∛r e^(iπ/3) = ∛r/2 + i∛r√3/2
+                // ∛(r e^(-iπ)) = ∛r e^(-iπ/3) = ∛r/2 - i∛r√3/2
+                let one = T::one();
+                let two = one + one;
+                let three = two + one;
+                let re = (-self.re).cbrt() / two;
+                let im = three.sqrt() * re;
+                if self.im.is_sign_positive() {
+                    Self::new(re, im)
+                } else {
+                    Self::new(re, -im)
+                }
+            }
+        } else if self.re.is_zero() {
+            // ∛(r e^(iπ/2)) = ∛r e^(iπ/6) = ∛r√3/2 + i∛r/2
+            // ∛(r e^(-iπ/2)) = ∛r e^(-iπ/6) = ∛r√3/2 - i∛r/2
+            let one = T::one();
+            let two = one + one;
+            let three = two + one;
+            let im = self.im.abs().cbrt() / two;
+            let re = three.sqrt() * im;
+            if self.im.is_sign_positive() {
+                Self::new(re, im)
+            } else {
+                Self::new(re, -im)
+            }
+        } else {
+            // formula: cbrt(r e^(it)) = cbrt(r) e^(it/3)
+            let one = T::one();
+            let three = one + one + one;
+            let (r, theta) = self.to_polar();
+            Self::from_polar(&(r.cbrt()), &(theta / three))
+        }
+    }
+
     /// Raises `self` to a floating point power.
     #[inline]
     pub fn powf(&self, exp: T) -> Self {
@@ -1712,6 +1765,72 @@ mod test {
                 assert_eq!(Complex64::new(-n * n, 0.0).sqrt(), Complex64::new(0.0, n));
                 // √(-n² - 0i) = 0 - ni
                 assert_eq!(Complex64::new(-n * n, -0.0).sqrt(), Complex64::new(0.0, -n));
+            }
+        }
+
+        #[test]
+        fn test_cbrt() {
+            assert!(close(_0_0i.cbrt(), _0_0i));
+            assert!(close(_1_0i.cbrt(), _1_0i));
+            assert!(close(
+                Complex::new(-1.0, 0.0).cbrt(),
+                Complex::new(0.5, 0.75.sqrt())
+            ));
+            assert!(close(
+                Complex::new(-1.0, -0.0).cbrt(),
+                Complex::new(0.5, -0.75.sqrt())
+            ));
+            assert!(close(_0_1i.cbrt(), Complex::new(0.75.sqrt(), 0.5)));
+            assert!(close(_0_1i.conj().cbrt(), Complex::new(0.75.sqrt(), -0.5)));
+            for &c in all_consts.iter() {
+                // cbrt(conj(z() = conj(cbrt(z))
+                assert!(close(c.conj().cbrt(), c.cbrt().conj()));
+                // for this branch, -pi/3 <= arg(cbrt(z)) <= pi/3
+                assert!(
+                    -f64::consts::FRAC_PI_3 <= c.cbrt().arg()
+                        && c.cbrt().arg() <= f64::consts::FRAC_PI_3
+                );
+                // cbrt(z) * cbrt(z) cbrt(z) = z
+                assert!(close(c.cbrt() * c.cbrt() * c.cbrt(), c));
+            }
+        }
+
+        #[test]
+        fn test_cbrt_real() {
+            for n in (0..100).map(f64::from) {
+                // ∛(n³ + 0i) = n + 0i
+                let n3 = n * n * n;
+                assert!(close(
+                    Complex64::new(n3, 0.0).cbrt(),
+                    Complex64::new(n, 0.0)
+                ));
+                // ∛(-n³ + 0i) = n e^(iπ/3)
+                assert!(close(
+                    Complex64::new(-n3, 0.0).cbrt(),
+                    Complex64::from_polar(&n, &(f64::consts::FRAC_PI_3))
+                ));
+                // ∛(-n³ - 0i) = n e^(-iπ/3)
+                assert!(close(
+                    Complex64::new(-n3, -0.0).cbrt(),
+                    Complex64::from_polar(&n, &(-f64::consts::FRAC_PI_3))
+                ));
+            }
+        }
+
+        #[test]
+        fn test_cbrt_imag() {
+            for n in (0..100).map(f64::from) {
+                // ∛(0 + n³i) = n e^(iπ/6)
+                let n3 = n * n * n;
+                assert!(close(
+                    Complex64::new(0.0, n3).cbrt(),
+                    Complex64::from_polar(&n, &(f64::consts::FRAC_PI_6))
+                ));
+                // ∛(0 - n³i) = n e^(-iπ/6)
+                assert!(close(
+                    Complex64::new(0.0, -n3).cbrt(),
+                    Complex64::from_polar(&n, &(-f64::consts::FRAC_PI_6))
+                ));
             }
         }
 
