@@ -1,3 +1,13 @@
+# Release 0.2.3 (2019-06-11)
+
+- [`Complex::sqrt()` is now more accurate for negative reals][60].
+- [`Complex::cbrt()` computes the principal cube root][61].
+
+**Contributors**: @cuviper
+
+[60]: https://github.com/rust-num/num-complex/pull/60
+[61]: https://github.com/rust-num/num-complex/pull/61
+
 # Release 0.2.2 (2019-06-10)
 
 - [`Complex::l1_norm()` computes the Manhattan distance from the origin][43].
