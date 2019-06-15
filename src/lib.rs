@@ -38,13 +38,15 @@ use core::str::FromStr;
 #[cfg(feature = "std")]
 use std::error::Error;
 
-use traits::{Inv, MulAdd, Num, One, Signed, Zero};
+use traits::{Inv, MulAdd, Num, One, Pow, Signed, Zero};
 
 #[cfg(feature = "std")]
 use traits::float::Float;
 use traits::float::FloatCore;
 
 mod cast;
+mod pow;
+
 #[cfg(feature = "rand")]
 mod crand;
 #[cfg(feature = "rand")]
@@ -121,6 +123,12 @@ impl<T: Clone + Num> Complex<T> {
     pub fn unscale(&self, t: T) -> Self {
         Self::new(self.re.clone() / t.clone(), self.im.clone() / t)
     }
+
+    /// Raises `self` to an unsigned integer power.
+    #[inline]
+    pub fn powu(&self, exp: u32) -> Self {
+        Pow::pow(self, exp)
+    }
 }
 
 impl<T: Clone + Num + Neg<Output = T>> Complex<T> {
@@ -138,6 +146,12 @@ impl<T: Clone + Num + Neg<Output = T>> Complex<T> {
             self.re.clone() / norm_sqr.clone(),
             -self.im.clone() / norm_sqr,
         )
+    }
+
+    /// Raises `self` to a signed integer power.
+    #[inline]
+    pub fn powi(&self, exp: i32) -> Self {
+        Pow::pow(self, exp)
     }
 }
 
@@ -206,10 +220,92 @@ impl<T: Clone + Float> Complex<T> {
     /// The branch satisfies `-π/2 ≤ arg(sqrt(z)) ≤ π/2`.
     #[inline]
     pub fn sqrt(&self) -> Self {
-        // formula: sqrt(r e^(it)) = sqrt(r) e^(it/2)
-        let two = T::one() + T::one();
-        let (r, theta) = self.to_polar();
-        Self::from_polar(&(r.sqrt()), &(theta / two))
+        if self.im.is_zero() {
+            if self.re.is_sign_positive() {
+                // simple positive real √r, and copy `im` for its sign
+                Self::new(self.re.sqrt(), self.im)
+            } else {
+                // √(r e^(iπ)) = √r e^(iπ/2) = i√r
+                // √(r e^(-iπ)) = √r e^(-iπ/2) = -i√r
+                let re = T::zero();
+                let im = (-self.re).sqrt();
+                if self.im.is_sign_positive() {
+                    Self::new(re, im)
+                } else {
+                    Self::new(re, -im)
+                }
+            }
+        } else if self.re.is_zero() {
+            // √(r e^(iπ/2)) = √r e^(iπ/4) = √(r/2) + i√(r/2)
+            // √(r e^(-iπ/2)) = √r e^(-iπ/4) = √(r/2) - i√(r/2)
+            let one = T::one();
+            let two = one + one;
+            let x = (self.im.abs() / two).sqrt();
+            if self.im.is_sign_positive() {
+                Self::new(x, x)
+            } else {
+                Self::new(x, -x)
+            }
+        } else {
+            // formula: sqrt(r e^(it)) = sqrt(r) e^(it/2)
+            let one = T::one();
+            let two = one + one;
+            let (r, theta) = self.to_polar();
+            Self::from_polar(&(r.sqrt()), &(theta / two))
+        }
+    }
+
+    /// Computes the principal value of the cube root of `self`.
+    ///
+    /// This function has one branch cut:
+    ///
+    /// * `(-∞, 0)`, continuous from above.
+    ///
+    /// The branch satisfies `-π/3 ≤ arg(cbrt(z)) ≤ π/3`.
+    ///
+    /// Note that this does not match the usual result for the cube root of
+    /// negative real numbers. For example, the real cube root of `-8` is `-2`,
+    /// but the principal complex cube root of `-8` is `1 + i√3`.
+    #[inline]
+    pub fn cbrt(&self) -> Self {
+        if self.im.is_zero() {
+            if self.re.is_sign_positive() {
+                // simple positive real ∛r, and copy `im` for its sign
+                Self::new(self.re.cbrt(), self.im)
+            } else {
+                // ∛(r e^(iπ)) = ∛r e^(iπ/3) = ∛r/2 + i∛r√3/2
+                // ∛(r e^(-iπ)) = ∛r e^(-iπ/3) = ∛r/2 - i∛r√3/2
+                let one = T::one();
+                let two = one + one;
+                let three = two + one;
+                let re = (-self.re).cbrt() / two;
+                let im = three.sqrt() * re;
+                if self.im.is_sign_positive() {
+                    Self::new(re, im)
+                } else {
+                    Self::new(re, -im)
+                }
+            }
+        } else if self.re.is_zero() {
+            // ∛(r e^(iπ/2)) = ∛r e^(iπ/6) = ∛r√3/2 + i∛r/2
+            // ∛(r e^(-iπ/2)) = ∛r e^(-iπ/6) = ∛r√3/2 - i∛r/2
+            let one = T::one();
+            let two = one + one;
+            let three = two + one;
+            let im = self.im.abs().cbrt() / two;
+            let re = three.sqrt() * im;
+            if self.im.is_sign_positive() {
+                Self::new(re, im)
+            } else {
+                Self::new(re, -im)
+            }
+        } else {
+            // formula: cbrt(r e^(it)) = cbrt(r) e^(it/3)
+            let one = T::one();
+            let three = one + one + one;
+            let (r, theta) = self.to_polar();
+            Self::from_polar(&(r.cbrt()), &(theta / three))
+        }
     }
 
     /// Raises `self` to a floating point power.
@@ -1302,6 +1398,12 @@ impl<T: Clone + Num> Zero for Complex<T> {
     fn is_zero(&self) -> bool {
         self.re.is_zero() && self.im.is_zero()
     }
+
+    #[inline]
+    fn set_zero(&mut self) {
+        self.re.set_zero();
+        self.im.set_zero();
+    }
 }
 
 impl<T: Clone + Num> One for Complex<T> {
@@ -1313,6 +1415,12 @@ impl<T: Clone + Num> One for Complex<T> {
     #[inline]
     fn is_one(&self) -> bool {
         self.re.is_one() && self.im.is_zero()
+    }
+
+    #[inline]
+    fn set_one(&mut self) {
+        self.re.set_one();
+        self.im.set_zero();
     }
 }
 
@@ -1793,10 +1901,29 @@ mod test {
         assert_eq!(_4_2i.l1_norm(), 6.0);
     }
 
+    #[test]
+    fn test_pow() {
+        for c in all_consts.iter() {
+            assert_eq!(c.powi(0), _1_0i);
+            let mut pos = _1_0i;
+            let mut neg = _1_0i;
+            for i in 1i32..20 {
+                pos *= c;
+                assert_eq!(pos, c.powi(i));
+                if c.is_zero() {
+                    assert!(c.powi(-i).is_nan());
+                } else {
+                    neg /= c;
+                    assert_eq!(neg, c.powi(-i));
+                }
+            }
+        }
+    }
+
     #[cfg(feature = "std")]
     mod float {
         use super::*;
-        use traits::Float;
+        use traits::{Float, Pow};
 
         #[test]
         #[cfg_attr(target_arch = "x86", ignore)]
@@ -1841,7 +1968,11 @@ mod test {
 
         fn close_to_tol(a: Complex64, b: Complex64, tol: f64) -> bool {
             // returns true if a and b are reasonably close
-            (a == b) || (a - b).norm() < tol
+            let close = (a == b) || (a - b).norm() < tol;
+            if !close {
+                println!("{:?} != {:?}", a, b);
+            }
+            close
         }
 
         #[test]
@@ -1910,9 +2041,11 @@ mod test {
 
         #[test]
         fn test_powf() {
-            let c = Complex::new(2.0, -1.0);
-            let r = c.powf(3.5);
-            assert!(close_to_tol(r, Complex::new(-0.8684746, -16.695934), 1e-5));
+            let c = Complex64::new(2.0, -1.0);
+            let expected = Complex64::new(-0.8684746, -16.695934);
+            assert!(close_to_tol(c.powf(3.5), expected, 1e-5));
+            assert!(close_to_tol(Pow::pow(c, 3.5_f64), expected, 1e-5));
+            assert!(close_to_tol(Pow::pow(c, 3.5_f32), expected, 1e-5));
         }
 
         #[test]
@@ -1967,8 +2100,8 @@ mod test {
                 assert!(close(c.conj().sqrt(), c.sqrt().conj()));
                 // for this branch, -pi/2 <= arg(sqrt(z)) <= pi/2
                 assert!(
-                    -f64::consts::PI / 2.0 <= c.sqrt().arg()
-                        && c.sqrt().arg() <= f64::consts::PI / 2.0
+                    -f64::consts::FRAC_PI_2 <= c.sqrt().arg()
+                        && c.sqrt().arg() <= f64::consts::FRAC_PI_2
                 );
                 // sqrt(z) * sqrt(z) = z
                 assert!(close(c.sqrt() * c.sqrt(), c));
@@ -1979,6 +2112,102 @@ mod test {
         fn test_cbrt() {
             use super::super::ComplexFloat;
             assert!(close(_1_0i.cbrt(), _1_0i));
+        }
+
+        #[test]
+        fn test_sqrt_real() {
+            for n in (0..100).map(f64::from) {
+                // √(n² + 0i) = n + 0i
+                let n2 = n * n;
+                assert_eq!(Complex64::new(n2, 0.0).sqrt(), Complex64::new(n, 0.0));
+                // √(-n² + 0i) = 0 + ni
+                assert_eq!(Complex64::new(-n2, 0.0).sqrt(), Complex64::new(0.0, n));
+                // √(-n² - 0i) = 0 - ni
+                assert_eq!(Complex64::new(-n2, -0.0).sqrt(), Complex64::new(0.0, -n));
+            }
+        }
+
+        #[test]
+        fn test_sqrt_imag() {
+            for n in (0..100).map(f64::from) {
+                // √(0 + n²i) = n e^(iπ/4)
+                let n2 = n * n;
+                assert!(close(
+                    Complex64::new(0.0, n2).sqrt(),
+                    Complex64::from_polar(&n, &(f64::consts::FRAC_PI_4))
+                ));
+                // √(0 - n²i) = n e^(-iπ/4)
+                assert!(close(
+                    Complex64::new(0.0, -n2).sqrt(),
+                    Complex64::from_polar(&n, &(-f64::consts::FRAC_PI_4))
+                ));
+            }
+        }
+
+        #[test]
+        fn test_cbrt() {
+            assert!(close(_0_0i.cbrt(), _0_0i));
+            assert!(close(_1_0i.cbrt(), _1_0i));
+            assert!(close(
+                Complex::new(-1.0, 0.0).cbrt(),
+                Complex::new(0.5, 0.75.sqrt())
+            ));
+            assert!(close(
+                Complex::new(-1.0, -0.0).cbrt(),
+                Complex::new(0.5, -0.75.sqrt())
+            ));
+            assert!(close(_0_1i.cbrt(), Complex::new(0.75.sqrt(), 0.5)));
+            assert!(close(_0_1i.conj().cbrt(), Complex::new(0.75.sqrt(), -0.5)));
+            for &c in all_consts.iter() {
+                // cbrt(conj(z() = conj(cbrt(z))
+                assert!(close(c.conj().cbrt(), c.cbrt().conj()));
+                // for this branch, -pi/3 <= arg(cbrt(z)) <= pi/3
+                assert!(
+                    -f64::consts::FRAC_PI_3 <= c.cbrt().arg()
+                        && c.cbrt().arg() <= f64::consts::FRAC_PI_3
+                );
+                // cbrt(z) * cbrt(z) cbrt(z) = z
+                assert!(close(c.cbrt() * c.cbrt() * c.cbrt(), c));
+            }
+        }
+
+        #[test]
+        fn test_cbrt_real() {
+            for n in (0..100).map(f64::from) {
+                // ∛(n³ + 0i) = n + 0i
+                let n3 = n * n * n;
+                assert!(close(
+                    Complex64::new(n3, 0.0).cbrt(),
+                    Complex64::new(n, 0.0)
+                ));
+                // ∛(-n³ + 0i) = n e^(iπ/3)
+                assert!(close(
+                    Complex64::new(-n3, 0.0).cbrt(),
+                    Complex64::from_polar(&n, &(f64::consts::FRAC_PI_3))
+                ));
+                // ∛(-n³ - 0i) = n e^(-iπ/3)
+                assert!(close(
+                    Complex64::new(-n3, -0.0).cbrt(),
+                    Complex64::from_polar(&n, &(-f64::consts::FRAC_PI_3))
+                ));
+            }
+        }
+
+        #[test]
+        fn test_cbrt_imag() {
+            for n in (0..100).map(f64::from) {
+                // ∛(0 + n³i) = n e^(iπ/6)
+                let n3 = n * n * n;
+                assert!(close(
+                    Complex64::new(0.0, n3).cbrt(),
+                    Complex64::from_polar(&n, &(f64::consts::FRAC_PI_6))
+                ));
+                // ∛(0 - n³i) = n e^(-iπ/6)
+                assert!(close(
+                    Complex64::new(0.0, -n3).cbrt(),
+                    Complex64::from_polar(&n, &(-f64::consts::FRAC_PI_6))
+                ));
+            }
         }
 
         #[test]
@@ -2725,5 +2954,31 @@ mod test {
         let v = vec![_0_1i, _1_0i];
         assert_eq!(v.iter().product::<Complex64>(), _0_1i);
         assert_eq!(v.into_iter().product::<Complex64>(), _0_1i);
+    }
+
+    #[test]
+    fn test_zero() {
+        let zero = Complex64::zero();
+        assert!(zero.is_zero());
+
+        let mut c = Complex::new(1.23, 4.56);
+        assert!(!c.is_zero());
+        assert_eq!(&c + &zero, c);
+
+        c.set_zero();
+        assert!(c.is_zero());
+    }
+
+    #[test]
+    fn test_one() {
+        let one = Complex64::one();
+        assert!(one.is_one());
+
+        let mut c = Complex::new(1.23, 4.56);
+        assert!(!c.is_one());
+        assert_eq!(&c * &one, c);
+
+        c.set_one();
+        assert!(c.is_one());
     }
 }
