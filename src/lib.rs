@@ -45,6 +45,7 @@ use traits::float::Float;
 use traits::float::FloatCore;
 
 mod cast;
+use cast::Consts;
 mod pow;
 
 #[cfg(feature = "rand")]
@@ -806,7 +807,7 @@ forward_impl!(f32);
 forward_impl!(f64);
 
 #[cfg(feature = "std")]
-impl<T: Float + FloatCore> ComplexFloat<T> for Complex<T> {
+impl<T: Float + FloatCore + Consts<T> + MulAdd<Output = T>> ComplexFloat<T> for Complex<T> {
     type Output = T;
 
     fn re(self) -> Self::Output {
@@ -829,24 +830,13 @@ impl<T: Float + FloatCore> ComplexFloat<T> for Complex<T> {
         self.finv()
     }
 
-    fn powi(self, n: i32) -> Self {
-        let (r, theta) = self.to_polar();
-        let turns = T::from(n).unwrap();
-        Complex::from_polar(&Float::powi(r, n), &(theta * turns))
-    }
-
     fn powz(self, z: Self) -> Self {
         self.powc(z)
     }
 
-    fn cbrt(self) -> Self {
-        let (r, theta) = self.to_polar();
-        Complex::from_polar(&r.cbrt(), &(theta * T::from(f64::from_bits(0x3fd5555555555555)).unwrap()))
-    }
-
     fn exp2(self) -> Self {
         let (r, theta) = self.to_polar();
-        Complex::from_polar(&r.exp2(), &(theta * T::from(f64::from_bits(0x3fe62e42fefa39ef)).unwrap()))
+        Complex::from_polar(&r.exp2(), &(theta * T::LN_2))
     }
 
     fn log(self, base: Self) -> Self {
@@ -854,11 +844,11 @@ impl<T: Float + FloatCore> ComplexFloat<T> for Complex<T> {
     }
 
     fn log2(self) -> Self {
-        self.ln() / T::from(f64::from_bits(0x3fe62e42fefa39ef)).unwrap()
+        self.ln() / T::LN_2
     }
 
     fn log10(self) -> Self {
-        self.ln() / T::from(f64::from_bits(0x40026bb1bbb55516)).unwrap()
+        self.ln() / T::LN_10
     }
 
     fn is_normal(self) -> bool {
@@ -877,16 +867,15 @@ impl<T: Float + FloatCore> ComplexFloat<T> for Complex<T> {
         self.is_nan()
     }
 
-    fn mul_add(self, other: Self, add: Self) -> Self {
-        let re = self.re.clone().mul_add(other.re.clone(), add.re)
-            - (self.im.clone() * other.im.clone()); // FIXME: use mulsub when available in rust
-        let im = self.re.mul_add(other.im, self.im.mul_add(other.re, add.im));
-        Complex::new(re, im)
+    fn mul_add(self, a: Self, b: Self) -> Self {
+        MulAdd::mul_add(self, a, b)
     }
 
     forward_ref! {
         Self::powf(&self, f: Self::Output) -> Self;
+        Self::powi(&self, n: i32) -> Self;
         Self::sqrt(&self) -> Self;
+        Self::cbrt(&self) -> Self;
         Self::exp(&self) -> Self;
         Self::ln(&self) -> Self;
         Self::sin(&self) -> Self;
@@ -2106,12 +2095,6 @@ mod test {
                 // sqrt(z) * sqrt(z) = z
                 assert!(close(c.sqrt() * c.sqrt(), c));
             }
-        }
-        
-        #[test]
-        fn test_cbrt() {
-            use super::super::ComplexFloat;
-            assert!(close(_1_0i.cbrt(), _1_0i));
         }
 
         #[test]

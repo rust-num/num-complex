@@ -80,6 +80,21 @@ where
     }
 }
 
+pub trait Consts<T: Copy> {
+    const LN_2: T;
+    const LN_10: T;
+}
+
+impl Consts<f32> for f32 {
+    const LN_2: f32 = 0.693147180559945309417232121458176568_f32;
+    const LN_10: f32 = 2.30258509299404568401799145468436421_f32;
+}
+
+impl Consts<f64> for f64 {
+    const LN_2: f64 = 0.693147180559945309417232121458176568_f64;
+    const LN_10: f64 = 2.30258509299404568401799145468436421_f64;
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
