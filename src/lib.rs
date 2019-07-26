@@ -92,13 +92,23 @@ pub struct Complex<T> {
 pub type Complex32 = Complex<f32>;
 pub type Complex64 = Complex<f64>;
 
-impl<T: Clone + Num> Complex<T> {
+impl<T> Complex<T> {
+    #[cfg(has_const_fn)]
+    /// Create a new Complex
+    #[inline]
+    pub const fn new(re: T, im: T) -> Self {
+        Complex { re: re, im: im }
+    }
+
+    #[cfg(not(has_const_fn))]
     /// Create a new Complex
     #[inline]
     pub fn new(re: T, im: T) -> Self {
         Complex { re: re, im: im }
     }
+}
 
+impl<T: Clone + Num> Complex<T> {
     /// Returns imaginary unit
     #[inline]
     pub fn i() -> Self {
