@@ -2649,4 +2649,15 @@ mod test {
         c.set_one();
         assert!(c.is_one());
     }
+
+    #[cfg(has_const_fn)]
+    #[test]
+    fn test_const() {
+        const R: f64 = 12.3;
+        const I: f64 = -4.5;
+        const C: Complex64 = Complex::new(R, I);
+
+        assert_eq!(C.re, 12.3);
+        assert_eq!(C.im, -4.5);
+    }
 }
