@@ -92,13 +92,23 @@ pub struct Complex<T> {
 pub type Complex32 = Complex<f32>;
 pub type Complex64 = Complex<f64>;
 
-impl<T: Clone + Num> Complex<T> {
+impl<T> Complex<T> {
+    #[cfg(has_const_fn)]
+    /// Create a new Complex
+    #[inline]
+    pub const fn new(re: T, im: T) -> Self {
+        Complex { re: re, im: im }
+    }
+
+    #[cfg(not(has_const_fn))]
     /// Create a new Complex
     #[inline]
     pub fn new(re: T, im: T) -> Self {
         Complex { re: re, im: im }
     }
+}
 
+impl<T: Clone + Num> Complex<T> {
     /// Returns imaginary unit
     #[inline]
     pub fn i() -> Self {
@@ -2638,5 +2648,16 @@ mod test {
 
         c.set_one();
         assert!(c.is_one());
+    }
+
+    #[cfg(has_const_fn)]
+    #[test]
+    fn test_const() {
+        const R: f64 = 12.3;
+        const I: f64 = -4.5;
+        const C: Complex64 = Complex::new(R, I);
+
+        assert_eq!(C.re, 12.3);
+        assert_eq!(C.im, -4.5);
     }
 }
