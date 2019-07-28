@@ -625,17 +625,17 @@ pub trait ComplexFloat<T> {
     fn recip(self) -> Self;
 
     /// Takes self to the power of n.
-    /// 
+    ///
     /// Returns NaN if self is zero.
     fn powi(self, n: i32) -> Self;
-    
+
     /// Takes self to the power of f.
-    /// 
+    ///
     /// Returns NaN if self is zero.
     fn powf(self, f: Self::Output) -> Self;
 
     /// Takes self to the power of z.
-    /// 
+    ///
     /// Returns NaN if self is zero.
     fn powz(self, z: Self) -> Self;
 
@@ -768,7 +768,7 @@ macro_rules! forward_impl {
             fn powz(self, z: Self) -> Self {
                 self.powf(z)
             }
-            
+
             forward! {
                 Float::is_normal(self) -> bool;
                 Float::is_infinite(self) -> bool;
@@ -862,7 +862,7 @@ impl<T: Float + FloatCore + Consts<T> + MulAdd<Output = T>> ComplexFloat<T> for 
     fn is_finite(self) -> bool {
         self.is_finite()
     }
-    
+
     fn is_nan(self) -> bool {
         self.is_nan()
     }
@@ -2021,7 +2021,7 @@ mod test {
                 1e-5
             ));
         }
-        
+
         #[test]
         fn test_powi() {
             use super::super::ComplexFloat;
@@ -2055,7 +2055,7 @@ mod test {
             use super::super::ComplexFloat;
             assert!(close(_1_0i.log2(), _0_0i));
         }
-        
+
         #[test]
         fn test_log10() {
             use super::super::ComplexFloat;
