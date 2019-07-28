@@ -11,6 +11,10 @@ fn main() {
         panic!("i128 support was not detected!");
     }
 
+    if ac.probe_rustc_version(1, 20) {
+        autocfg::emit("has_assoc_const");
+    }
+
     // autocfg doesn't have a direct way to probe for `const fn` yet.
     if ac.probe_rustc_version(1, 31) {
         autocfg::emit("has_const_fn");

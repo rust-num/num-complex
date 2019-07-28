@@ -45,7 +45,7 @@ use traits::float::Float;
 use traits::float::FloatCore;
 
 mod cast;
-use cast::Consts;
+use cast::RealConsts;
 mod pow;
 
 #[cfg(feature = "rand")]
@@ -817,7 +817,7 @@ forward_impl!(f32);
 forward_impl!(f64);
 
 #[cfg(feature = "std")]
-impl<T: Float + FloatCore + Consts<T> + MulAdd<Output = T>> ComplexFloat<T> for Complex<T> {
+impl<T: Float + FloatCore + RealConsts<T> + MulAdd<Output = T>> ComplexFloat<T> for Complex<T> {
     type Output = T;
 
     fn re(self) -> Self::Output {
@@ -844,21 +844,40 @@ impl<T: Float + FloatCore + Consts<T> + MulAdd<Output = T>> ComplexFloat<T> for 
         self.powc(z)
     }
 
+    #[cfg(has_assoc_const)]
     fn exp2(self) -> Self {
         let (r, theta) = self.to_polar();
         Complex::from_polar(&r.exp2(), &(theta * T::LN_2))
+    }
+
+    #[cfg(not(has_assoc_const))]
+    fn exp2(self) -> Self {
+        let (r, theta) = self.to_polar();
+        Complex::from_polar(&r.exp2(), &(theta * T::frac_ln_2()))
     }
 
     fn log(self, base: Self) -> Self {
         self.ln() / base.ln()
     }
 
+    #[cfg(has_assoc_const)]
     fn log2(self) -> Self {
-        self.ln() / T::LN_2
+        self.ln() * T::FRAC_LN_2
     }
 
+    #[cfg(has_assoc_const)]
     fn log10(self) -> Self {
-        self.ln() / T::LN_10
+        self.ln() * T::FRAC_LN_10
+    }
+
+    #[cfg(not(has_assoc_const))]
+    fn log2(self) -> Self {
+        self.ln() * T::frac_ln_2()
+    }
+
+    #[cfg(not(has_assoc_const))]
+    fn log10(self) -> Self {
+        self.ln() * T::frac_ln_10()
     }
 
     fn is_normal(self) -> bool {

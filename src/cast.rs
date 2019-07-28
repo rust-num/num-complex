@@ -80,19 +80,43 @@ where
     }
 }
 
-pub trait Consts<T: Copy> {
+pub trait RealConsts<T: Copy> {
+    #[cfg(has_assoc_const)]
     const LN_2: T;
-    const LN_10: T;
+    #[cfg(has_assoc_const)]
+    const FRAC_LN_2: T;
+    #[cfg(has_assoc_const)]
+    const FRAC_LN_10: T;
+
+    fn ln_2() -> T;
+    fn frac_ln_2() -> T;
+    fn frac_ln_10() -> T;
 }
 
-impl Consts<f32> for f32 {
+impl RealConsts<f32> for f32 {
+    #[cfg(has_assoc_const)]
     const LN_2: f32 = 0.693147180559945309417232121458176568_f32;
-    const LN_10: f32 = 2.30258509299404568401799145468436421_f32;
+    #[cfg(has_assoc_const)]
+    const FRAC_LN_2: f32 = 1.442695040888963407359924681001892137_f32;
+    #[cfg(has_assoc_const)]
+    const FRAC_LN_10: f32 = 0.434294481903251827651128918916605082_f32;
+    
+    fn ln_2() -> f32 { 0.693147180559945309417232121458176568_f32 }
+    fn frac_ln_2() -> f32 { 1.442695040888963407359924681001892137_f32 }
+    fn frac_ln_10() -> f32 { 0.434294481903251827651128918916605082_f32 }
 }
 
-impl Consts<f64> for f64 {
+impl RealConsts<f64> for f64 {
+    #[cfg(has_assoc_const)]
     const LN_2: f64 = 0.693147180559945309417232121458176568_f64;
-    const LN_10: f64 = 2.30258509299404568401799145468436421_f64;
+    #[cfg(has_assoc_const)]
+    const FRAC_LN_2: f64 = 1.442695040888963407359924681001892137_f64;
+    #[cfg(has_assoc_const)]
+    const FRAC_LN_10: f64 = 0.434294481903251827651128918916605082_f64;
+
+    fn ln_2() -> f64 { 0.693147180559945309417232121458176568_f64 }
+    fn frac_ln_2() -> f64 { 1.442695040888963407359924681001892137_f64 }
+    fn frac_ln_10() -> f64 { 0.434294481903251827651128918916605082_f64 }
 }
 
 #[cfg(test)]
