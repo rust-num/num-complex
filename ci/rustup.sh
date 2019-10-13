@@ -1,12 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 # Use rustup to locally run the same suite of tests as .travis.yml.
-# (You should first install/update all versions listed below.)
+# This script installs toolchains used in CI process.
 
 set -ex
 
 export TRAVIS_RUST_VERSION
 for TRAVIS_RUST_VERSION in 1.15.0 1.22.0 1.26.0 stable beta nightly; do
-    run="rustup run $TRAVIS_RUST_VERSION"
-    $run cargo build --verbose
-    $run $PWD/ci/test_full.sh
+    rustup install $TRAVIS_RUST_VERSION
+    rustup run $TRAVIS_RUST_VERSION $(cd $(dirname $0);pwd)/test_full.sh
 done
