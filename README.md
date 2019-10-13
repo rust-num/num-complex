@@ -47,4 +47,7 @@ Release notes are available in [RELEASES.md](RELEASES.md).
 
 ## Compatibility
 
-The `num-complex` crate is tested for rustc 1.15 and greater.
+The `num-complex` crate is tested for rustc 1.15 and greater, and each feature are tested for
+
+- `rand`: 1.22 and later
+- `i128`: 1.26 and later
