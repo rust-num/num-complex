@@ -16,5 +16,5 @@ fn main() {
         autocfg::emit("has_const_fn");
     }
 
-    autocfg::rerun_path(file!());
+    autocfg::rerun_path("build.rs");
 }
