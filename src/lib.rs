@@ -45,6 +45,7 @@ use traits::float::Float;
 use traits::float::FloatCore;
 
 mod cast;
+use cast::RealConsts;
 mod pow;
 
 #[cfg(feature = "rand")]
@@ -605,6 +606,319 @@ impl<T: Clone + FloatCore> Complex<T> {
     #[inline]
     pub fn is_normal(self) -> bool {
         self.re.is_normal() && self.im.is_normal()
+    }
+}
+
+pub trait ComplexFloat<T> {
+    type Output;
+
+    /// Returns `true` if this value is `NaN` and false otherwise.
+    fn is_nan(self) -> bool;
+
+    /// Returns `true` if this value is positive infinity or negative infinity and
+    /// false otherwise.
+    fn is_infinite(self) -> bool;
+
+    /// Returns `true` if this number is neither infinite nor `NaN`.
+    fn is_finite(self) -> bool;
+
+    /// Returns `true` if the number is neither zero, infinite,
+    /// [subnormal][subnormal], or `NaN`.
+    /// [subnormal]: http://en.wikipedia.org/wiki/Denormal_number
+    fn is_normal(self) -> bool;
+
+    /// Fused multiply-add. Computes `(self * a) + b` with only one rounding
+    /// error, yielding a more accurate result than an unfused multiply-add.
+    fn mul_add(self, a: Self, b: Self) -> Self;
+
+    /// Take the reciprocal (inverse) of a number, `1/x`.
+    fn recip(self) -> Self;
+
+    /// Takes self to the power of n.
+    ///
+    /// Returns NaN if self is zero.
+    fn powi(self, n: i32) -> Self;
+
+    /// Takes self to the power of f.
+    ///
+    /// Returns NaN if self is zero.
+    fn powf(self, f: Self::Output) -> Self;
+
+    /// Takes self to the power of z.
+    ///
+    /// Returns NaN if self is zero.
+    fn powz(self, z: Self) -> Self;
+
+    /// Take the square root of a number.
+    fn sqrt(self) -> Self;
+
+    /// Returns `e^(self)`, (the exponential function).
+    fn exp(self) -> Self;
+
+    /// Returns `2^(self)`.
+    fn exp2(self) -> Self;
+
+    /// Returns the natural logarithm of the number.
+    fn ln(self) -> Self;
+
+    /// Returns the logarithm of the number with respect to an arbitrary base.
+    fn log(self, base: Self) -> Self;
+
+    /// Returns the base 2 logarithm of the number.
+    fn log2(self) -> Self;
+
+    /// Returns the base 10 logarithm of the number.
+    fn log10(self) -> Self;
+
+    /// Take the cubic root of a number.
+    fn cbrt(self) -> Self;
+
+    /// Computes the sine of a number (in radians).
+    fn sin(self) -> Self;
+
+    /// Computes the cosine of a number (in radians).
+    fn cos(self) -> Self;
+
+    /// Computes the tangent of a number (in radians).
+    fn tan(self) -> Self;
+
+    /// Computes the arcsine of a number. Return value is in radians in
+    /// the range [-pi/2, pi/2] or NaN if the number is outside the range
+    /// [-1, 1].
+    fn asin(self) -> Self;
+
+    /// Computes the arccosine of a number. Return value is in radians in
+    /// the range [0, pi] or NaN if the number is outside the range
+    /// [-1, 1].
+    fn acos(self) -> Self;
+
+    /// Computes the arctangent of a number. Return value is in radians in the
+    /// range [-pi/2, pi/2];
+    fn atan(self) -> Self;
+
+    /// Hyperbolic sine function.
+    fn sinh(self) -> Self;
+
+    /// Hyperbolic cosine function.
+    fn cosh(self) -> Self;
+
+    /// Hyperbolic tangent function.
+    fn tanh(self) -> Self;
+
+    /// Inverse hyperbolic sine function.
+    fn asinh(self) -> Self;
+
+    /// Inverse hyperbolic cosine function.
+    fn acosh(self) -> Self;
+
+    /// Inverse hyperbolic tangent function.
+    fn atanh(self) -> Self;
+
+    /// Returns the real part of the float.
+    fn re(self) -> Self::Output;
+
+    /// Returns the imaginary part of the float which equals to zero.
+    fn im(self) -> Self::Output;
+
+    /// Returns the absolute value of the float.
+    fn abs(self) -> Self::Output;
+
+    /// Computes the argument of the float.
+    fn arg(self) -> Self::Output;
+}
+
+macro_rules! forward {
+    ($( $base:ident :: $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )*)
+        => {$(
+            #[inline]
+            fn $method(self $( , $arg : $ty )* ) -> $ret {
+                <Self as $base>::$method(self $( , $arg )* )
+            }
+        )*};
+}
+
+macro_rules! forward_ref {
+    ($( Self :: $method:ident ( & self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )*)
+        => {$(
+            #[inline]
+            fn $method(self $( , $arg : $ty )* ) -> $ret {
+                Self::$method(&self $( , $arg )* )
+            }
+        )*};
+}
+
+macro_rules! forward_impl {
+    ($T:ident) => {
+        #[cfg(feature = "std")]
+        impl ComplexFloat<$T> for $T {
+            type Output = $T;
+
+            fn re(self) -> Self::Output {
+                self
+            }
+
+            fn im(self) -> Self::Output {
+                0.0
+            }
+
+            fn abs(self) -> Self::Output {
+                self.abs()
+            }
+
+            fn arg(self) -> Self::Output {
+                if self > 0.0 {
+                    0.0
+                } else if self < 0.0 {
+                    3.14159265358979323846264338327950288
+                } else {
+                    0.0 / 0.0
+                }
+            }
+
+            fn powz(self, z: Self) -> Self {
+                self.powf(z)
+            }
+
+            forward! {
+                Float::is_normal(self) -> bool;
+                Float::is_infinite(self) -> bool;
+                Float::is_finite(self) -> bool;
+                Float::is_nan(self) -> bool;
+                Float::mul_add(self, a: Self, b: Self) -> Self;
+                Float::recip(self) -> Self;
+                Float::powi(self, n: i32) -> Self;
+                Float::powf(self, f: Self) -> Self;
+                Float::sqrt(self) -> Self;
+                Float::cbrt(self) -> Self;
+                Float::exp(self) -> Self;
+                Float::exp2(self) -> Self;
+                Float::ln(self) -> Self;
+                Float::log(self, base: Self) -> Self;
+                Float::log2(self) -> Self;
+                Float::log10(self) -> Self;
+                Float::sin(self) -> Self;
+                Float::cos(self) -> Self;
+                Float::tan(self) -> Self;
+                Float::asin(self) -> Self;
+                Float::acos(self) -> Self;
+                Float::atan(self) -> Self;
+                Float::sinh(self) -> Self;
+                Float::cosh(self) -> Self;
+                Float::tanh(self) -> Self;
+                Float::asinh(self) -> Self;
+                Float::acosh(self) -> Self;
+                Float::atanh(self) -> Self;
+            }
+        }
+    };
+}
+
+forward_impl!(f32);
+forward_impl!(f64);
+
+#[cfg(feature = "std")]
+impl<T: Float + FloatCore + RealConsts<T> + MulAdd<Output = T>> ComplexFloat<T> for Complex<T> {
+    type Output = T;
+
+    fn re(self) -> Self::Output {
+        self.re
+    }
+
+    fn im(self) -> Self::Output {
+        self.im
+    }
+
+    fn abs(self) -> Self::Output {
+        self.norm()
+    }
+
+    fn arg(self) -> Self::Output {
+        Complex::arg(&self)
+    }
+
+    fn recip(self) -> Self {
+        self.finv()
+    }
+
+    fn powz(self, z: Self) -> Self {
+        self.powc(z)
+    }
+
+    #[cfg(has_assoc_const)]
+    fn exp2(self) -> Self {
+        let (r, theta) = self.to_polar();
+        Complex::from_polar(&r.exp2(), &(theta * T::LN_2))
+    }
+
+    #[cfg(not(has_assoc_const))]
+    fn exp2(self) -> Self {
+        let (r, theta) = self.to_polar();
+        Complex::from_polar(&r.exp2(), &(theta * T::frac_ln_2()))
+    }
+
+    fn log(self, base: Self) -> Self {
+        self.ln() / base.ln()
+    }
+
+    #[cfg(has_assoc_const)]
+    fn log2(self) -> Self {
+        self.ln() * T::FRAC_LN_2
+    }
+
+    #[cfg(has_assoc_const)]
+    fn log10(self) -> Self {
+        self.ln() * T::FRAC_LN_10
+    }
+
+    #[cfg(not(has_assoc_const))]
+    fn log2(self) -> Self {
+        self.ln() * T::frac_ln_2()
+    }
+
+    #[cfg(not(has_assoc_const))]
+    fn log10(self) -> Self {
+        self.ln() * T::frac_ln_10()
+    }
+
+    fn is_normal(self) -> bool {
+        self.is_normal()
+    }
+
+    fn is_infinite(self) -> bool {
+        self.is_infinite()
+    }
+
+    fn is_finite(self) -> bool {
+        self.is_finite()
+    }
+
+    fn is_nan(self) -> bool {
+        self.is_nan()
+    }
+
+    fn mul_add(self, a: Self, b: Self) -> Self {
+        MulAdd::mul_add(self, a, b)
+    }
+
+    forward_ref! {
+        Self::powf(&self, f: Self::Output) -> Self;
+        Self::powi(&self, n: i32) -> Self;
+        Self::sqrt(&self) -> Self;
+        Self::cbrt(&self) -> Self;
+        Self::exp(&self) -> Self;
+        Self::ln(&self) -> Self;
+        Self::sin(&self) -> Self;
+        Self::cos(&self) -> Self;
+        Self::tan(&self) -> Self;
+        Self::asin(&self) -> Self;
+        Self::acos(&self) -> Self;
+        Self::atan(&self) -> Self;
+        Self::sinh(&self) -> Self;
+        Self::cosh(&self) -> Self;
+        Self::tanh(&self) -> Self;
+        Self::asinh(&self) -> Self;
+        Self::acosh(&self) -> Self;
+        Self::atanh(&self) -> Self;
     }
 }
 
@@ -1701,6 +2015,12 @@ mod test {
         }
 
         #[test]
+        fn test_exp2() {
+            use super::super::ComplexFloat;
+            assert!(close(_0_0i.exp2(), _1_0i));
+        }
+
+        #[test]
         fn test_ln() {
             assert!(close(_1_0i.ln(), _0_0i));
             assert!(close(_0_1i.ln(), _0_1i.scale(f64::consts::PI / 2.0)));
@@ -1732,6 +2052,12 @@ mod test {
         }
 
         #[test]
+        fn test_powi() {
+            use super::super::ComplexFloat;
+            assert!(close(_0_1i.powi(4), _1_0i));
+        }
+
+        #[test]
         fn test_powf() {
             let c = Complex64::new(2.0, -1.0);
             let expected = Complex64::new(-0.8684746, -16.695934);
@@ -1741,10 +2067,28 @@ mod test {
         }
 
         #[test]
+        fn test_powz() {
+            use super::super::ComplexFloat;
+            assert!(close(_1_0i.powz(_0_1i), _1_0i));
+        }
+
+        #[test]
         fn test_log() {
             let c = Complex::new(2.0, -1.0);
             let r = c.log(10.0);
             assert!(close_to_tol(r, Complex::new(0.349485, -0.20135958), 1e-5));
+        }
+
+        #[test]
+        fn test_log2() {
+            use super::super::ComplexFloat;
+            assert!(close(_1_0i.log2(), _0_0i));
+        }
+
+        #[test]
+        fn test_log10() {
+            use super::super::ComplexFloat;
+            assert!(close(_1_0i.log10(), _0_0i));
         }
 
         #[test]
