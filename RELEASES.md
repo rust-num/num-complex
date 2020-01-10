@@ -1,3 +1,13 @@
+# Release 0.2.4 (2020-01-09)
+
+- [`Complex::new` is now a `const fn` for Rust 1.31 and later][63].
+- [Updated the `autocfg` build dependency to 1.0][68].
+
+**Contributors**: @burrbull, @cuviper, @dingelish
+
+[63]: https://github.com/rust-num/num-complex/pull/63
+[68]: https://github.com/rust-num/num-complex/pull/68
+
 # Release 0.2.3 (2019-06-11)
 
 - [`Complex::sqrt()` is now more accurate for negative reals][60].

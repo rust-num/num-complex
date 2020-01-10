@@ -8,7 +8,7 @@ categories = ["algorithms", "data-structures", "science", "no-std"]
 license = "MIT/Apache-2.0"
 name = "num-complex"
 repository = "https://github.com/rust-num/num-complex"
-version = "0.2.3"
+version = "0.2.4"
 readme = "README.md"
 build = "build.rs"
 exclude = ["/ci/*", "/.travis.yml", "/bors.toml"]
@@ -19,7 +19,7 @@ features = ["std", "serde", "rand"]
 [dependencies]
 
 [dependencies.num-traits]
-version = "0.2.7"
+version = "0.2.11"
 default-features = false
 
 [dependencies.serde]
