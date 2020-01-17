@@ -12,9 +12,9 @@
 //!
 //! ## Compatibility
 //!
-//! The `num-complex` crate is tested for rustc 1.15 and greater.
+//! The `num-complex` crate is tested for rustc 1.31 and greater.
 
-#![doc(html_root_url = "https://docs.rs/num-complex/0.2")]
+#![doc(html_root_url = "https://docs.rs/num-complex/0.3")]
 #![no_std]
 
 #[cfg(any(test, feature = "std"))]
@@ -93,17 +93,9 @@ pub type Complex32 = Complex<f32>;
 pub type Complex64 = Complex<f64>;
 
 impl<T> Complex<T> {
-    #[cfg(has_const_fn)]
     /// Create a new Complex
     #[inline]
     pub const fn new(re: T, im: T) -> Self {
-        Complex { re: re, im: im }
-    }
-
-    #[cfg(not(has_const_fn))]
-    /// Create a new Complex
-    #[inline]
-    pub fn new(re: T, im: T) -> Self {
         Complex { re: re, im: im }
     }
 }
@@ -1086,9 +1078,6 @@ impl<T: Clone + Num> Rem<T> for Complex<T> {
     }
 }
 
-#[cfg(not(has_i128))]
-real_arithmetic!(usize, u8, u16, u32, u64, isize, i8, i16, i32, i64, f32, f64);
-#[cfg(has_i128)]
 real_arithmetic!(usize, u8, u16, u32, u64, u128, isize, i8, i16, i32, i64, i128, f32, f64);
 
 /* constants */
@@ -2650,7 +2639,6 @@ mod test {
         assert!(c.is_one());
     }
 
-    #[cfg(has_const_fn)]
     #[test]
     fn test_const() {
         const R: f64 = 12.3;

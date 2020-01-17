@@ -76,7 +76,6 @@ pow_impl!(u16, i16);
 pow_impl!(u32, i32);
 pow_impl!(u64, i64);
 pow_impl!(usize, isize);
-#[cfg(has_i128)]
 pow_impl!(u128, i128);
 
 // Note: we can't add `impl<T: Float> Pow<T> for Complex<T>` because new blanket impls are a

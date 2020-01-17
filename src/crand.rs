@@ -42,8 +42,8 @@ where
 }
 
 #[cfg(test)]
-fn test_rng() -> SmallRng {
-    SmallRng::from_seed([42; 16])
+fn test_rng() -> StdRng {
+    StdRng::from_seed([42; 32])
 }
 
 #[test]

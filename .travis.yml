@@ -1,10 +1,8 @@
 language: rust
 sudo: false
 rust:
-  - 1.15.0
-  - 1.22.0 # rand
-  - 1.26.0 # has_i128
   - 1.31.0 # 2018!
+  - 1.32.0 # rand
   - stable
   - beta
   - nightly
@@ -20,7 +18,7 @@ matrix:
       before_script:
         - rustup target add $TARGET
       script:
-        - cargo build --verbose --target $TARGET --no-default-features --features i128,rand,serde
+        - cargo build --verbose --target $TARGET --no-default-features --features rand,serde
     - name: "rustfmt"
       rust: 1.31.0
       before_script:
