@@ -1,7 +1,7 @@
 //! Rand implementations for complex numbers
 
-use crate::traits::Num;
 use crate::Complex;
+use num_traits::Num;
 use rand::distributions::Standard;
 use rand::prelude::*;
 

@@ -21,8 +21,6 @@
 #[cfg_attr(test, macro_use)]
 extern crate std;
 
-extern crate num_traits as traits;
-
 use core::fmt;
 #[cfg(test)]
 use core::hash;
@@ -32,11 +30,11 @@ use core::str::FromStr;
 #[cfg(feature = "std")]
 use std::error::Error;
 
-use crate::traits::{Inv, MulAdd, Num, One, Pow, Signed, Zero};
+use num_traits::{Inv, MulAdd, Num, One, Pow, Signed, Zero};
 
 #[cfg(feature = "std")]
-use crate::traits::float::Float;
-use crate::traits::float::FloatCore;
+use num_traits::float::Float;
+use num_traits::float::FloatCore;
 
 mod cast;
 mod pow;
@@ -753,7 +751,7 @@ impl<T: Clone + Num> Rem<Complex<T>> for Complex<T> {
 mod opassign {
     use core::ops::{AddAssign, DivAssign, MulAssign, RemAssign, SubAssign};
 
-    use crate::traits::{MulAddAssign, NumAssign};
+    use num_traits::{MulAddAssign, NumAssign};
 
     use crate::Complex;
 
@@ -1513,7 +1511,7 @@ mod test {
 
     use std::string::{String, ToString};
 
-    use crate::traits::{Num, One, Zero};
+    use num_traits::{Num, One, Zero};
 
     pub const _0_0i: Complex64 = Complex { re: 0.0, im: 0.0 };
     pub const _1_0i: Complex64 = Complex { re: 1.0, im: 0.0 };
@@ -1610,7 +1608,7 @@ mod test {
     #[cfg(feature = "std")]
     mod float {
         use super::*;
-        use crate::traits::{Float, Pow};
+        use num_traits::{Float, Pow};
 
         #[test]
         #[cfg_attr(target_arch = "x86", ignore)]
@@ -2225,7 +2223,7 @@ mod test {
 
     mod complex_arithmetic {
         use super::{_05_05i, _0_0i, _0_1i, _1_0i, _1_1i, _4_2i, _neg1_1i, all_consts};
-        use crate::traits::{MulAdd, MulAddAssign, Zero};
+        use num_traits::{MulAdd, MulAddAssign, Zero};
 
         #[test]
         fn test_add() {

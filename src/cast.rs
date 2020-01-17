@@ -1,5 +1,5 @@
 use super::Complex;
-use crate::traits::{AsPrimitive, FromPrimitive, Num, NumCast, ToPrimitive};
+use num_traits::{AsPrimitive, FromPrimitive, Num, NumCast, ToPrimitive};
 
 macro_rules! impl_to_primitive {
     ($ty:ty, $to:ident) => {
