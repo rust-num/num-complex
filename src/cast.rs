@@ -22,9 +22,7 @@ impl<T: ToPrimitive + Num> ToPrimitive for Complex<T> {
     impl_to_primitive!(i16, to_i16);
     impl_to_primitive!(i32, to_i32);
     impl_to_primitive!(i64, to_i64);
-    #[cfg(has_i128)]
     impl_to_primitive!(u128, to_u128);
-    #[cfg(has_i128)]
     impl_to_primitive!(i128, to_i128);
     impl_to_primitive!(f32, to_f32);
     impl_to_primitive!(f64, to_f64);
@@ -53,9 +51,7 @@ impl<T: FromPrimitive + Num> FromPrimitive for Complex<T> {
     impl_from_primitive!(i16, from_i16);
     impl_from_primitive!(i32, from_i32);
     impl_from_primitive!(i64, from_i64);
-    #[cfg(has_i128)]
     impl_from_primitive!(u128, from_u128);
-    #[cfg(has_i128)]
     impl_from_primitive!(i128, from_i128);
     impl_from_primitive!(f32, from_f32);
     impl_from_primitive!(f64, from_f64);

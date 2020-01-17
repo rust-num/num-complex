@@ -1086,9 +1086,6 @@ impl<T: Clone + Num> Rem<T> for Complex<T> {
     }
 }
 
-#[cfg(not(has_i128))]
-real_arithmetic!(usize, u8, u16, u32, u64, isize, i8, i16, i32, i64, f32, f64);
-#[cfg(has_i128)]
 real_arithmetic!(usize, u8, u16, u32, u64, u128, isize, i8, i16, i32, i64, i128, f32, f64);
 
 /* constants */
