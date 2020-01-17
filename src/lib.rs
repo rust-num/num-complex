@@ -1343,7 +1343,7 @@ where
     }
 
     // parse re
-    let re = r#try!(from(re).map_err(ParseComplexError::from_error));
+    let re = from(re).map_err(ParseComplexError::from_error)?;
     let re = if neg_re { T::zero() - re } else { re };
 
     // pop imaginary unit off
@@ -1356,7 +1356,7 @@ where
     }
 
     // parse im
-    let im = r#try!(from(im).map_err(ParseComplexError::from_error));
+    let im = from(im).map_err(ParseComplexError::from_error)?;
     let im = if neg_im { T::zero() - im } else { im };
 
     Ok(Complex::new(re, im))
@@ -1443,7 +1443,7 @@ where
     where
         D: serde::Deserializer<'de>,
     {
-        let (re, im) = r#try!(serde::Deserialize::deserialize(deserializer));
+        let (re, im) = serde::Deserialize::deserialize(deserializer)?;
         Ok(Self::new(re, im))
     }
 }
