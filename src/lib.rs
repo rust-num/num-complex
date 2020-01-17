@@ -1273,10 +1273,10 @@ where
     #[inline]
     fn is_whitespace(c: char) -> bool {
         match c {
-            ' ' | '\x09'...'\x0d' => true,
+            ' ' | '\x09'..='\x0d' => true,
             _ if c > '\x7f' => match c {
                 '\u{0085}' | '\u{00a0}' | '\u{1680}' => true,
-                '\u{2000}'...'\u{200a}' => true,
+                '\u{2000}'..='\u{200a}' => true,
                 '\u{2028}' | '\u{2029}' | '\u{202f}' | '\u{205f}' => true,
                 '\u{3000}' => true,
                 _ => false,
