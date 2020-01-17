@@ -93,17 +93,9 @@ pub type Complex32 = Complex<f32>;
 pub type Complex64 = Complex<f64>;
 
 impl<T> Complex<T> {
-    #[cfg(has_const_fn)]
     /// Create a new Complex
     #[inline]
     pub const fn new(re: T, im: T) -> Self {
-        Complex { re: re, im: im }
-    }
-
-    #[cfg(not(has_const_fn))]
-    /// Create a new Complex
-    #[inline]
-    pub fn new(re: T, im: T) -> Self {
         Complex { re: re, im: im }
     }
 }
@@ -2647,7 +2639,6 @@ mod test {
         assert!(c.is_one());
     }
 
-    #[cfg(has_const_fn)]
     #[test]
     fn test_const() {
         const R: f64 = 12.3;

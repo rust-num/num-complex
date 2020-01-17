@@ -10,7 +10,6 @@ name = "num-complex"
 repository = "https://github.com/rust-num/num-complex"
 version = "0.3.0-pre"
 readme = "README.md"
-build = "build.rs"
 exclude = ["/ci/*", "/.travis.yml", "/bors.toml"]
 publish = false
 
@@ -37,6 +36,3 @@ default-features = false
 [features]
 default = ["std"]
 std = ["num-traits/std"]
-
-[build-dependencies]
-autocfg = "1"
