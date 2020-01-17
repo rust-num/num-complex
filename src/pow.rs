@@ -1,9 +1,9 @@
 use super::Complex;
 
-use core::ops::Neg;
 #[cfg(feature = "std")]
-use traits::Float;
-use traits::{Num, One, Pow};
+use crate::traits::Float;
+use crate::traits::{Num, One, Pow};
+use core::ops::Neg;
 
 macro_rules! pow_impl {
     ($U:ty, $S:ty) => {
