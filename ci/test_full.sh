@@ -4,13 +4,10 @@ set -ex
 
 echo Testing num-complex on rustc ${TRAVIS_RUST_VERSION}
 
-FEATURES="std serde"
-if [[ "$TRAVIS_RUST_VERSION" =~ ^(nightly|beta|stable|1.26.0|1.22.0)$ ]]; then
-  FEATURES="$FEATURES rand"
-fi
-if [[ "$TRAVIS_RUST_VERSION" =~ ^(nightly|beta|stable|1.26.0)$ ]]; then
-  FEATURES="$FEATURES i128"
-fi
+case "$TRAVIS_RUST_VERSION" in
+  1.31.*) FEATURES="serde" ;;
+  *) FEATURES="serde rand" ;;
+esac
 
 # num-complex should build and test everywhere.
 cargo build --verbose
@@ -29,3 +26,7 @@ done
 # test all supported features together
 cargo build --features="$FEATURES"
 cargo test --features="$FEATURES"
+
+# test all supported features together with std
+cargo build --features="std $FEATURES"
+cargo test --features="std $FEATURES"
