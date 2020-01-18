@@ -1574,6 +1574,7 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::float_cmp)]
     fn test_l1_norm() {
         assert_eq!(_0_0i.l1_norm(), 0.0);
         assert_eq!(_1_0i.l1_norm(), 1.0);
@@ -1611,6 +1612,7 @@ mod test {
         #[test]
         #[cfg_attr(target_arch = "x86", ignore)]
         // FIXME #7158: (maybe?) currently failing on x86.
+        #[allow(clippy::float_cmp)]
         fn test_norm() {
             fn test(c: Complex64, ns: f64) {
                 assert_eq!(c.norm_sqr(), ns);
@@ -2630,6 +2632,7 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::float_cmp)]
     fn test_const() {
         const R: f64 = 12.3;
         const I: f64 = -4.5;
