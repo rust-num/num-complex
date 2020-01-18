@@ -88,7 +88,7 @@ impl<T> Complex<T> {
     /// Create a new Complex
     #[inline]
     pub const fn new(re: T, im: T) -> Self {
-        Complex { re: re, im: im }
+        Complex { re, im }
     }
 }
 
