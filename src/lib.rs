@@ -1304,7 +1304,7 @@ where
         // ignore '+'/'-' if part of an exponent
         if (c == b'+' || c == b'-') && !(p == b'e' || p == b'E') {
             // trim whitespace around the separator
-            a = &s[..i + 1].trim_right_matches(is_whitespace);
+            a = &s[..=i].trim_right_matches(is_whitespace);
             b = &s[i + 2..].trim_left_matches(is_whitespace);
             neg_b = c == b'-';
 
