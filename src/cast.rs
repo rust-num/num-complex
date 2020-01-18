@@ -1,5 +1,5 @@
 use super::Complex;
-use traits::{AsPrimitive, FromPrimitive, Num, NumCast, ToPrimitive};
+use num_traits::{AsPrimitive, FromPrimitive, Num, NumCast, ToPrimitive};
 
 macro_rules! impl_to_primitive {
     ($ty:ty, $to:ident) => {
@@ -32,8 +32,8 @@ macro_rules! impl_from_primitive {
     ($ty:ty, $from_xx:ident) => {
         #[inline]
         fn $from_xx(n: $ty) -> Option<Self> {
-            T::$from_xx(n).map(|re| Complex {
-                re: re,
+            Some(Complex {
+                re: T::$from_xx(n)?,
                 im: T::zero(),
             })
         }
@@ -59,8 +59,8 @@ impl<T: FromPrimitive + Num> FromPrimitive for Complex<T> {
 
 impl<T: NumCast + Num> NumCast for Complex<T> {
     fn from<U: ToPrimitive>(n: U) -> Option<Self> {
-        T::from(n).map(|re| Complex {
-            re: re,
+        Some(Complex {
+            re: T::from(n)?,
             im: T::zero(),
         })
     }

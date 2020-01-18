@@ -21,14 +21,6 @@
 #[cfg_attr(test, macro_use)]
 extern crate std;
 
-extern crate num_traits as traits;
-
-#[cfg(feature = "serde")]
-extern crate serde;
-
-#[cfg(feature = "rand")]
-extern crate rand;
-
 use core::fmt;
 #[cfg(test)]
 use core::hash;
@@ -38,11 +30,11 @@ use core::str::FromStr;
 #[cfg(feature = "std")]
 use std::error::Error;
 
-use traits::{Inv, MulAdd, Num, One, Pow, Signed, Zero};
+use num_traits::{Inv, MulAdd, Num, One, Pow, Signed, Zero};
 
 #[cfg(feature = "std")]
-use traits::float::Float;
-use traits::float::FloatCore;
+use num_traits::float::Float;
+use num_traits::float::FloatCore;
 
 mod cast;
 mod pow;
@@ -50,7 +42,7 @@ mod pow;
 #[cfg(feature = "rand")]
 mod crand;
 #[cfg(feature = "rand")]
-pub use crand::ComplexDistribution;
+pub use crate::crand::ComplexDistribution;
 
 // FIXME #1284: handle complex NaN & infinity etc. This
 // probably doesn't map to C's _Complex correctly.
@@ -96,7 +88,7 @@ impl<T> Complex<T> {
     /// Create a new Complex
     #[inline]
     pub const fn new(re: T, im: T) -> Self {
-        Complex { re: re, im: im }
+        Complex { re, im }
     }
 }
 
@@ -759,9 +751,9 @@ impl<T: Clone + Num> Rem<Complex<T>> for Complex<T> {
 mod opassign {
     use core::ops::{AddAssign, DivAssign, MulAssign, RemAssign, SubAssign};
 
-    use traits::{MulAddAssign, NumAssign};
+    use num_traits::{MulAddAssign, NumAssign};
 
-    use Complex;
+    use crate::Complex;
 
     impl<T: Clone + NumAssign> AddAssign for Complex<T> {
         fn add_assign(&mut self, other: Self) {
@@ -1149,11 +1141,11 @@ macro_rules! write_complex {
         };
 
         fn fmt_re_im(
-            f: &mut fmt::Formatter,
+            f: &mut fmt::Formatter<'_>,
             re_neg: bool,
             im_neg: bool,
-            real: fmt::Arguments,
-            imag: fmt::Arguments,
+            real: fmt::Arguments<'_>,
+            imag: fmt::Arguments<'_>,
         ) -> fmt::Result {
             let prefix = if f.alternate() { $prefix } else { "" };
             let sign = if re_neg {
@@ -1191,7 +1183,7 @@ macro_rules! write_complex {
 
         #[cfg(feature = "std")]
         // Currently, we can only apply width using an intermediate `String` (and thus `std`)
-        fn fmt_complex(f: &mut fmt::Formatter, complex: fmt::Arguments) -> fmt::Result {
+        fn fmt_complex(f: &mut fmt::Formatter<'_>, complex: fmt::Arguments<'_>) -> fmt::Result {
             use std::string::ToString;
             if let Some(width) = f.width() {
                 write!(f, "{0: >1$}", complex.to_string(), width)
@@ -1201,7 +1193,7 @@ macro_rules! write_complex {
         }
 
         #[cfg(not(feature = "std"))]
-        fn fmt_complex(f: &mut fmt::Formatter, complex: fmt::Arguments) -> fmt::Result {
+        fn fmt_complex(f: &mut fmt::Formatter<'_>, complex: fmt::Arguments<'_>) -> fmt::Result {
             write!(f, "{}", complex)
         }
     }};
@@ -1212,7 +1204,7 @@ impl<T> fmt::Display for Complex<T>
 where
     T: fmt::Display + Num + PartialOrd + Clone,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "", "", self.re, self.im, T)
     }
 }
@@ -1221,7 +1213,7 @@ impl<T> fmt::LowerExp for Complex<T>
 where
     T: fmt::LowerExp + Num + PartialOrd + Clone,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "e", "", self.re, self.im, T)
     }
 }
@@ -1230,7 +1222,7 @@ impl<T> fmt::UpperExp for Complex<T>
 where
     T: fmt::UpperExp + Num + PartialOrd + Clone,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "E", "", self.re, self.im, T)
     }
 }
@@ -1239,7 +1231,7 @@ impl<T> fmt::LowerHex for Complex<T>
 where
     T: fmt::LowerHex + Num + PartialOrd + Clone,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "x", "0x", self.re, self.im, T)
     }
 }
@@ -1248,7 +1240,7 @@ impl<T> fmt::UpperHex for Complex<T>
 where
     T: fmt::UpperHex + Num + PartialOrd + Clone,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "X", "0x", self.re, self.im, T)
     }
 }
@@ -1257,7 +1249,7 @@ impl<T> fmt::Octal for Complex<T>
 where
     T: fmt::Octal + Num + PartialOrd + Clone,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "o", "0o", self.re, self.im, T)
     }
 }
@@ -1266,7 +1258,7 @@ impl<T> fmt::Binary for Complex<T>
 where
     T: fmt::Binary + Num + PartialOrd + Clone,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "b", "0b", self.re, self.im, T)
     }
 }
@@ -1281,10 +1273,10 @@ where
     #[inline]
     fn is_whitespace(c: char) -> bool {
         match c {
-            ' ' | '\x09'...'\x0d' => true,
+            ' ' | '\x09'..='\x0d' => true,
             _ if c > '\x7f' => match c {
                 '\u{0085}' | '\u{00a0}' | '\u{1680}' => true,
-                '\u{2000}'...'\u{200a}' => true,
+                '\u{2000}'..='\u{200a}' => true,
                 '\u{2028}' | '\u{2029}' | '\u{202f}' | '\u{205f}' => true,
                 '\u{3000}' => true,
                 _ => false,
@@ -1312,7 +1304,7 @@ where
         // ignore '+'/'-' if part of an exponent
         if (c == b'+' || c == b'-') && !(p == b'e' || p == b'E') {
             // trim whitespace around the separator
-            a = &s[..i + 1].trim_right_matches(is_whitespace);
+            a = &s[..=i].trim_right_matches(is_whitespace);
             b = &s[i + 2..].trim_left_matches(is_whitespace);
             neg_b = c == b'-';
 
@@ -1326,10 +1318,7 @@ where
     // split off real and imaginary parts
     if b.is_empty() {
         // input was either pure real or pure imaginary
-        b = match a.ends_with(imag) {
-            false => "0i",
-            true => "0",
-        };
+        b = if a.ends_with(imag) { "0" } else { "0i" };
     }
 
     let re;
@@ -1351,7 +1340,7 @@ where
     }
 
     // parse re
-    let re = try!(from(re).map_err(ParseComplexError::from_error));
+    let re = from(re).map_err(ParseComplexError::from_error)?;
     let re = if neg_re { T::zero() - re } else { re };
 
     // pop imaginary unit off
@@ -1364,7 +1353,7 @@ where
     }
 
     // parse im
-    let im = try!(from(im).map_err(ParseComplexError::from_error));
+    let im = from(im).map_err(ParseComplexError::from_error)?;
     let im = if neg_im { T::zero() - im } else { im };
 
     Ok(Complex::new(re, im))
@@ -1451,7 +1440,7 @@ where
     where
         D: serde::Deserializer<'de>,
     {
-        let (re, im) = try!(serde::Deserialize::deserialize(deserializer));
+        let (re, im) = serde::Deserialize::deserialize(deserializer)?;
         Ok(Self::new(re, im))
     }
 }
@@ -1483,6 +1472,7 @@ impl<E> ParseComplexError<E> {
 
 #[cfg(feature = "std")]
 impl<E: Error> Error for ParseComplexError<E> {
+    #[allow(deprecated)]
     fn description(&self) -> &str {
         match self.kind {
             ComplexErrorKind::ParseError(ref e) => e.description(),
@@ -1492,7 +1482,7 @@ impl<E: Error> Error for ParseComplexError<E> {
 }
 
 impl<E: fmt::Display> fmt::Display for ParseComplexError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind {
             ComplexErrorKind::ParseError(ref e) => e.fmt(f),
             ComplexErrorKind::ExprError => "invalid or unsupported complex expression".fmt(f),
@@ -1519,7 +1509,7 @@ mod test {
 
     use std::string::{String, ToString};
 
-    use traits::{Num, One, Zero};
+    use num_traits::{Num, One, Zero};
 
     pub const _0_0i: Complex64 = Complex { re: 0.0, im: 0.0 };
     pub const _1_0i: Complex64 = Complex { re: 1.0, im: 0.0 };
@@ -1584,6 +1574,7 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::float_cmp)]
     fn test_l1_norm() {
         assert_eq!(_0_0i.l1_norm(), 0.0);
         assert_eq!(_1_0i.l1_norm(), 1.0);
@@ -1616,11 +1607,12 @@ mod test {
     #[cfg(feature = "std")]
     mod float {
         use super::*;
-        use traits::{Float, Pow};
+        use num_traits::{Float, Pow};
 
         #[test]
         #[cfg_attr(target_arch = "x86", ignore)]
         // FIXME #7158: (maybe?) currently failing on x86.
+        #[allow(clippy::float_cmp)]
         fn test_norm() {
             fn test(c: Complex64, ns: f64) {
                 assert_eq!(c.norm_sqr(), ns);
@@ -1811,7 +1803,7 @@ mod test {
             ));
             assert!(close(
                 Complex::new(-1.0, -0.0).cbrt(),
-                Complex::new(0.5, -0.75.sqrt())
+                Complex::new(0.5, -(0.75.sqrt()))
             ));
             assert!(close(_0_1i.cbrt(), Complex::new(0.75.sqrt(), 0.5)));
             assert!(close(_0_1i.conj().cbrt(), Complex::new(0.75.sqrt(), -0.5)));
@@ -2231,7 +2223,7 @@ mod test {
 
     mod complex_arithmetic {
         use super::{_05_05i, _0_0i, _0_1i, _1_0i, _1_1i, _4_2i, _neg1_1i, all_consts};
-        use traits::{MulAdd, MulAddAssign, Zero};
+        use num_traits::{MulAdd, MulAddAssign, Zero};
 
         #[test]
         fn test_add() {
@@ -2450,9 +2442,9 @@ mod test {
         let a = Complex::new(0i32, 0i32);
         let b = Complex::new(1i32, 0i32);
         let c = Complex::new(0i32, 1i32);
-        assert!(::hash(&a) != ::hash(&b));
-        assert!(::hash(&b) != ::hash(&c));
-        assert!(::hash(&c) != ::hash(&a));
+        assert!(crate::hash(&a) != crate::hash(&b));
+        assert!(crate::hash(&b) != crate::hash(&c));
+        assert!(crate::hash(&c) != crate::hash(&a));
     }
 
     #[test]
@@ -2620,7 +2612,7 @@ mod test {
 
         let mut c = Complex::new(1.23, 4.56);
         assert!(!c.is_zero());
-        assert_eq!(&c + &zero, c);
+        assert_eq!(c + zero, c);
 
         c.set_zero();
         assert!(c.is_zero());
@@ -2633,13 +2625,14 @@ mod test {
 
         let mut c = Complex::new(1.23, 4.56);
         assert!(!c.is_one());
-        assert_eq!(&c * &one, c);
+        assert_eq!(c * one, c);
 
         c.set_one();
         assert!(c.is_one());
     }
 
     #[test]
+    #[allow(clippy::float_cmp)]
     fn test_const() {
         const R: f64 = 12.3;
         const I: f64 = -4.5;
