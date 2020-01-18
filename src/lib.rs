@@ -1475,6 +1475,7 @@ impl<E> ParseComplexError<E> {
 
 #[cfg(feature = "std")]
 impl<E: Error> Error for ParseComplexError<E> {
+    #[allow(deprecated)]
     fn description(&self) -> &str {
         match self.kind {
             ComplexErrorKind::ParseError(ref e) => e.description(),
