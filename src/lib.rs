@@ -1318,10 +1318,7 @@ where
     // split off real and imaginary parts
     if b.is_empty() {
         // input was either pure real or pure imaginary
-        b = match a.ends_with(imag) {
-            false => "0i",
-            true => "0",
-        };
+        b = if a.ends_with(imag) { "0" } else { "0i" };
     }
 
     let re;
