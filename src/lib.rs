@@ -1804,7 +1804,7 @@ mod test {
             ));
             assert!(close(
                 Complex::new(-1.0, -0.0).cbrt(),
-                Complex::new(0.5, -0.75.sqrt())
+                Complex::new(0.5, -(0.75.sqrt()))
             ));
             assert!(close(_0_1i.cbrt(), Complex::new(0.75.sqrt(), 0.5)));
             assert!(close(_0_1i.conj().cbrt(), Complex::new(0.75.sqrt(), -0.5)));
