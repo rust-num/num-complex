@@ -2612,7 +2612,7 @@ mod test {
 
         let mut c = Complex::new(1.23, 4.56);
         assert!(!c.is_zero());
-        assert_eq!(&c + &zero, c);
+        assert_eq!(c + zero, c);
 
         c.set_zero();
         assert!(c.is_zero());
@@ -2625,7 +2625,7 @@ mod test {
 
         let mut c = Complex::new(1.23, 4.56);
         assert!(!c.is_one());
-        assert_eq!(&c * &one, c);
+        assert_eq!(c * one, c);
 
         c.set_one();
         assert!(c.is_one());
