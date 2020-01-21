@@ -16,12 +16,6 @@ Add this to your `Cargo.toml`:
 num-complex = "0.3"
 ```
 
-and this to your crate root:
-
-```rust
-extern crate num_complex;
-```
-
 ## Features
 
 This crate can be used without the standard library (`#![no_std]`) by disabling
