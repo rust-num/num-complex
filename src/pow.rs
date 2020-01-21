@@ -1,7 +1,7 @@
 use super::Complex;
 
 use core::ops::Neg;
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "libm"))]
 use num_traits::Float;
 use num_traits::{Num, One, Pow};
 
@@ -85,7 +85,7 @@ pow_impl!(u128, i128);
 
 macro_rules! powf_impl {
     ($F:ty) => {
-        #[cfg(feature = "std")]
+        #[cfg(any(feature = "std", feature = "libm"))]
         impl<'a, T: Float> Pow<$F> for &'a Complex<T>
         where
             $F: Into<T>,
@@ -98,7 +98,7 @@ macro_rules! powf_impl {
             }
         }
 
-        #[cfg(feature = "std")]
+        #[cfg(any(feature = "std", feature = "libm"))]
         impl<'a, 'b, T: Float> Pow<&'b $F> for &'a Complex<T>
         where
             $F: Into<T>,
@@ -111,7 +111,7 @@ macro_rules! powf_impl {
             }
         }
 
-        #[cfg(feature = "std")]
+        #[cfg(any(feature = "std", feature = "libm"))]
         impl<T: Float> Pow<$F> for Complex<T>
         where
             $F: Into<T>,
@@ -124,7 +124,7 @@ macro_rules! powf_impl {
             }
         }
 
-        #[cfg(feature = "std")]
+        #[cfg(any(feature = "std", feature = "libm"))]
         impl<'b, T: Float> Pow<&'b $F> for Complex<T>
         where
             $F: Into<T>,
@@ -145,7 +145,7 @@ powf_impl!(f64);
 // These blanket impls are OK, because both the target type and the trait parameter would be
 // foreign to anyone else trying to implement something that would overlap, raising E0117.
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "libm"))]
 impl<'a, T: Float> Pow<Complex<T>> for &'a Complex<T> {
     type Output = Complex<T>;
 
@@ -155,7 +155,7 @@ impl<'a, T: Float> Pow<Complex<T>> for &'a Complex<T> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "libm"))]
 impl<'a, 'b, T: Float> Pow<&'b Complex<T>> for &'a Complex<T> {
     type Output = Complex<T>;
 
@@ -165,7 +165,7 @@ impl<'a, 'b, T: Float> Pow<&'b Complex<T>> for &'a Complex<T> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "libm"))]
 impl<T: Float> Pow<Complex<T>> for Complex<T> {
     type Output = Complex<T>;
 
@@ -175,7 +175,7 @@ impl<T: Float> Pow<Complex<T>> for Complex<T> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "libm"))]
 impl<'b, T: Float> Pow<&'b Complex<T>> for Complex<T> {
     type Output = Complex<T>;
 

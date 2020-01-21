@@ -5,8 +5,8 @@ set -ex
 echo Testing num-complex on rustc ${TRAVIS_RUST_VERSION}
 
 case "$TRAVIS_RUST_VERSION" in
-  1.31.*) FEATURES="serde" ;;
-  *) FEATURES="serde rand" ;;
+  1.31.*) FEATURES="libm serde" ;;
+  *) FEATURES="libm serde rand" ;;
 esac
 
 # num-complex should build and test everywhere.

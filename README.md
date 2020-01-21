@@ -27,9 +27,9 @@ version = "0.3"
 default-features = false
 ```
 
-Features based on `Float` types are only available when `std` is enabled. Where
-possible, `FloatCore` is used instead.  Formatting complex numbers only supports
-format width when `std` is enabled.
+Features based on `Float` types are only available when `std` or `libm` is
+enabled. Where possible, `FloatCore` is used instead.  Formatting complex
+numbers only supports format width when `std` is enabled.
 
 ## Releases
 

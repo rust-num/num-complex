@@ -32,7 +32,7 @@ use std::error::Error;
 
 use num_traits::{Inv, MulAdd, Num, One, Pow, Signed, Zero};
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "libm"))]
 use num_traits::float::Float;
 use num_traits::float::FloatCore;
 
@@ -159,7 +159,7 @@ impl<T: Clone + Signed> Complex<T> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "libm"))]
 impl<T: Clone + Float> Complex<T> {
     /// Calculate |self|
     #[inline]
@@ -1269,25 +1269,6 @@ where
     F: Fn(&str) -> Result<T, E>,
     T: Clone + Num,
 {
-    #[cfg(not(feature = "std"))]
-    #[inline]
-    fn is_whitespace(c: char) -> bool {
-        match c {
-            ' ' | '\x09'..='\x0d' => true,
-            _ if c > '\x7f' => match c {
-                '\u{0085}' | '\u{00a0}' | '\u{1680}' => true,
-                '\u{2000}'..='\u{200a}' => true,
-                '\u{2028}' | '\u{2029}' | '\u{202f}' | '\u{205f}' => true,
-                '\u{3000}' => true,
-                _ => false,
-            },
-            _ => false,
-        }
-    }
-
-    #[cfg(feature = "std")]
-    let is_whitespace = char::is_whitespace;
-
     let imag = match s.rfind('j') {
         None => 'i',
         _ => 'j',
@@ -1304,8 +1285,8 @@ where
         // ignore '+'/'-' if part of an exponent
         if (c == b'+' || c == b'-') && !(p == b'e' || p == b'E') {
             // trim whitespace around the separator
-            a = &s[..=i].trim_right_matches(is_whitespace);
-            b = &s[i + 2..].trim_left_matches(is_whitespace);
+            a = &s[..=i].trim_right_matches(char::is_whitespace);
+            b = &s[i + 2..].trim_left_matches(char::is_whitespace);
             neg_b = c == b'-';
 
             if b.is_empty() || (neg_b && b.starts_with('-')) {
@@ -1604,7 +1585,7 @@ mod test {
         }
     }
 
-    #[cfg(feature = "std")]
+    #[cfg(any(feature = "std", feature = "libm"))]
     mod float {
         use super::*;
         use num_traits::{Float, Pow};
@@ -2265,7 +2246,7 @@ mod test {
         }
 
         #[test]
-        #[cfg(feature = "std")]
+        #[cfg(any(feature = "std", feature = "libm"))]
         fn test_mul_add_float() {
             assert_eq!(_05_05i.mul_add(_05_05i, _0_0i), _05_05i * _05_05i + _0_0i);
             assert_eq!(_05_05i * _05_05i + _0_0i, _05_05i.mul_add(_05_05i, _0_0i));
