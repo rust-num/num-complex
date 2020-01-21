@@ -1269,25 +1269,6 @@ where
     F: Fn(&str) -> Result<T, E>,
     T: Clone + Num,
 {
-    #[cfg(not(feature = "std"))]
-    #[inline]
-    fn is_whitespace(c: char) -> bool {
-        match c {
-            ' ' | '\x09'..='\x0d' => true,
-            _ if c > '\x7f' => match c {
-                '\u{0085}' | '\u{00a0}' | '\u{1680}' => true,
-                '\u{2000}'..='\u{200a}' => true,
-                '\u{2028}' | '\u{2029}' | '\u{202f}' | '\u{205f}' => true,
-                '\u{3000}' => true,
-                _ => false,
-            },
-            _ => false,
-        }
-    }
-
-    #[cfg(feature = "std")]
-    let is_whitespace = char::is_whitespace;
-
     let imag = match s.rfind('j') {
         None => 'i',
         _ => 'j',
@@ -1304,8 +1285,8 @@ where
         // ignore '+'/'-' if part of an exponent
         if (c == b'+' || c == b'-') && !(p == b'e' || p == b'E') {
             // trim whitespace around the separator
-            a = &s[..=i].trim_right_matches(is_whitespace);
-            b = &s[i + 2..].trim_left_matches(is_whitespace);
+            a = &s[..=i].trim_right_matches(char::is_whitespace);
+            b = &s[i + 2..].trim_left_matches(char::is_whitespace);
             neg_b = c == b'-';
 
             if b.is_empty() || (neg_b && b.starts_with('-')) {
