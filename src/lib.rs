@@ -32,7 +32,7 @@ use std::error::Error;
 
 use num_traits::{Inv, MulAdd, Num, One, Pow, Signed, Zero};
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "libm"))]
 use num_traits::float::Float;
 use num_traits::float::FloatCore;
 
@@ -159,7 +159,7 @@ impl<T: Clone + Signed> Complex<T> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "libm"))]
 impl<T: Clone + Float> Complex<T> {
     /// Calculate |self|
     #[inline]
@@ -1604,7 +1604,7 @@ mod test {
         }
     }
 
-    #[cfg(feature = "std")]
+    #[cfg(any(feature = "std", feature = "libm"))]
     mod float {
         use super::*;
         use num_traits::{Float, Pow};
@@ -2265,7 +2265,7 @@ mod test {
         }
 
         #[test]
-        #[cfg(feature = "std")]
+        #[cfg(any(feature = "std", feature = "libm"))]
         fn test_mul_add_float() {
             assert_eq!(_05_05i.mul_add(_05_05i, _0_0i), _05_05i * _05_05i + _0_0i);
             assert_eq!(_05_05i * _05_05i + _0_0i, _05_05i.mul_add(_05_05i, _0_0i));
