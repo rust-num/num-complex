@@ -731,18 +731,21 @@ impl<T: Clone + Num> Div<Complex<T>> for Complex<T> {
 
 forward_all_binop!(impl Rem, rem);
 
-// Attempts to identify the gaussian integer whose product with `modulus`
-// is closest to `self`.
+impl<T: Clone + Num> Complex<T> {
+    /// Find the gaussian integer corresponding to the true ratio rounded towards zero.
+    fn div_trunc(&self, divisor: &Self) -> Self {
+        let Complex { re, im } = self / divisor;
+        Complex::new(re.clone() - re % T::one(), im.clone() - im % T::one())
+    }
+}
+
 impl<T: Clone + Num> Rem<Complex<T>> for Complex<T> {
     type Output = Self;
 
     #[inline]
     fn rem(self, modulus: Self) -> Self::Output {
-        let Complex { re, im } = self.clone() / modulus.clone();
-        // This is the gaussian integer corresponding to the true ratio
-        // rounded towards zero.
-        let (re0, im0) = (re.clone() - re % T::one(), im.clone() - im % T::one());
-        self - modulus * Self::Output::new(re0, im0)
+        let gaussian = self.div_trunc(&modulus);
+        self - modulus * gaussian
     }
 }
 
@@ -769,9 +772,16 @@ mod opassign {
         }
     }
 
+    // (a + i b) * (c + i d) == (a*c - b*d) + i (a*d + b*c)
     impl<T: Clone + NumAssign> MulAssign for Complex<T> {
         fn mul_assign(&mut self, other: Self) {
-            *self = self.clone() * other;
+            let a = self.re.clone();
+
+            self.re *= other.re.clone();
+            self.re -= self.im.clone() * other.im.clone();
+
+            self.im *= other.re;
+            self.im += a * other.im;
         }
     }
 
@@ -797,15 +807,27 @@ mod opassign {
         }
     }
 
+    // (a + i b) / (c + i d) == [(a + i b) * (c - i d)] / (c*c + d*d)
+    //   == [(a*c + b*d) / (c*c + d*d)] + i [(b*c - a*d) / (c*c + d*d)]
     impl<T: Clone + NumAssign> DivAssign for Complex<T> {
         fn div_assign(&mut self, other: Self) {
-            *self = self.clone() / other;
+            let a = self.re.clone();
+            let norm_sqr = other.norm_sqr();
+
+            self.re *= other.re.clone();
+            self.re += self.im.clone() * other.im.clone();
+            self.re /= norm_sqr.clone();
+
+            self.im *= other.re;
+            self.im -= a * other.im;
+            self.im /= norm_sqr;
         }
     }
 
     impl<T: Clone + NumAssign> RemAssign for Complex<T> {
-        fn rem_assign(&mut self, other: Self) {
-            *self = self.clone() % other;
+        fn rem_assign(&mut self, modulus: Self) {
+            let gaussian = self.div_trunc(&modulus);
+            *self -= modulus * gaussian;
         }
     }
 
@@ -837,7 +859,8 @@ mod opassign {
 
     impl<T: Clone + NumAssign> RemAssign<T> for Complex<T> {
         fn rem_assign(&mut self, other: T) {
-            *self = self.clone() % other;
+            self.re %= other.clone();
+            self.im %= other;
         }
     }
 
@@ -862,19 +885,7 @@ mod opassign {
     forward_op_assign!(impl SubAssign, sub_assign);
     forward_op_assign!(impl MulAssign, mul_assign);
     forward_op_assign!(impl DivAssign, div_assign);
-
-    impl<'a, T: Clone + NumAssign> RemAssign<&'a Complex<T>> for Complex<T> {
-        #[inline]
-        fn rem_assign(&mut self, other: &Self) {
-            self.rem_assign(other.clone())
-        }
-    }
-    impl<'a, T: Clone + NumAssign> RemAssign<&'a T> for Complex<T> {
-        #[inline]
-        fn rem_assign(&mut self, other: &T) {
-            self.rem_assign(other.clone())
-        }
-    }
+    forward_op_assign!(impl RemAssign, rem_assign);
 }
 
 impl<T: Clone + Num + Neg<Output = T>> Neg for Complex<T> {
