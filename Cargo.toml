@@ -8,10 +8,9 @@ categories = ["algorithms", "data-structures", "science", "no-std"]
 license = "MIT/Apache-2.0"
 name = "num-complex"
 repository = "https://github.com/rust-num/num-complex"
-version = "0.3.0-pre"
+version = "0.3.0"
 readme = "README.md"
 exclude = ["/bors.toml", "/ci/*", "/.github/*"]
-publish = false
 edition = "2018"
 
 [package.metadata.docs.rs]

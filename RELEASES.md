@@ -1,3 +1,22 @@
+# Release 0.3.0 (2020-06-13)
+
+### Enhancements
+
+- [The new "libm" feature passes through to `num-traits`][73], enabling `Float`
+  features on no-`std` builds.
+
+### Breaking Changes
+
+- `num-complex` now requires Rust 1.31 or greater.
+  - The "i128" opt-in feature was removed, now always available.
+- [Updated public dependences][65]:
+  - `rand` support has been updated to 0.7, requiring Rust 1.32.
+
+**Contributors**: @cuviper, @SOF3, @vks
+
+[65]: https://github.com/rust-num/num-complex/pull/65
+[73]: https://github.com/rust-num/num-complex/pull/73
+
 # Release 0.2.4 (2020-01-09)
 
 - [`Complex::new` is now a `const fn` for Rust 1.31 and later][63].
