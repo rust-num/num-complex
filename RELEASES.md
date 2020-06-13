@@ -11,11 +11,14 @@
   - The "i128" opt-in feature was removed, now always available.
 - [Updated public dependences][65]:
   - `rand` support has been updated to 0.7, requiring Rust 1.32.
+- [Methods for `T: Float` now take values instead of references][82], most
+  notably affecting the constructor `from_polar`.
 
 **Contributors**: @cuviper, @SOF3, @vks
 
 [65]: https://github.com/rust-num/num-complex/pull/65
 [73]: https://github.com/rust-num/num-complex/pull/73
+[82]: https://github.com/rust-num/num-complex/pull/82
 
 # Release 0.2.4 (2020-01-09)
 
