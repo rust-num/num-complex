@@ -5,9 +5,13 @@ macro_rules! impl_to_primitive {
     ($ty:ty, $to:ident) => {
         #[inline]
         fn $to(&self) -> Option<$ty> {
-            if self.im.is_zero() { self.re.$to() } else { None }
+            if self.im.is_zero() {
+                self.re.$to()
+            } else {
+                None
+            }
         }
-    }
+    };
 } // impl_to_primitive
 
 // Returns None if Complex part is non-zero

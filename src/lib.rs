@@ -160,35 +160,35 @@ impl<T: Clone + Signed> Complex<T> {
 }
 
 #[cfg(any(feature = "std", feature = "libm"))]
-impl<T: Clone + Float> Complex<T> {
+impl<T: Float> Complex<T> {
     /// Calculate |self|
     #[inline]
-    pub fn norm(&self) -> T {
+    pub fn norm(self) -> T {
         self.re.hypot(self.im)
     }
     /// Calculate the principal Arg of self.
     #[inline]
-    pub fn arg(&self) -> T {
+    pub fn arg(self) -> T {
         self.im.atan2(self.re)
     }
     /// Convert to polar form (r, theta), such that
     /// `self = r * exp(i * theta)`
     #[inline]
-    pub fn to_polar(&self) -> (T, T) {
+    pub fn to_polar(self) -> (T, T) {
         (self.norm(), self.arg())
     }
     /// Convert a polar representation into a complex number.
     #[inline]
-    pub fn from_polar(r: &T, theta: &T) -> Self {
-        Self::new(*r * theta.cos(), *r * theta.sin())
+    pub fn from_polar(r: T, theta: T) -> Self {
+        Self::new(r * theta.cos(), r * theta.sin())
     }
 
     /// Computes `e^(self)`, where `e` is the base of the natural logarithm.
     #[inline]
-    pub fn exp(&self) -> Self {
+    pub fn exp(self) -> Self {
         // formula: e^(a + bi) = e^a (cos(b) + i*sin(b))
         // = from_polar(e^a, b)
-        Self::from_polar(&self.re.exp(), &self.im)
+        Self::from_polar(self.re.exp(), self.im)
     }
 
     /// Computes the principal value of natural logarithm of `self`.
@@ -199,7 +199,7 @@ impl<T: Clone + Float> Complex<T> {
     ///
     /// The branch satisfies `-π ≤ arg(ln(z)) ≤ π`.
     #[inline]
-    pub fn ln(&self) -> Self {
+    pub fn ln(self) -> Self {
         // formula: ln(z) = ln|z| + i*arg(z)
         let (r, theta) = self.to_polar();
         Self::new(r.ln(), theta)
@@ -213,7 +213,7 @@ impl<T: Clone + Float> Complex<T> {
     ///
     /// The branch satisfies `-π/2 ≤ arg(sqrt(z)) ≤ π/2`.
     #[inline]
-    pub fn sqrt(&self) -> Self {
+    pub fn sqrt(self) -> Self {
         if self.im.is_zero() {
             if self.re.is_sign_positive() {
                 // simple positive real √r, and copy `im` for its sign
@@ -245,7 +245,7 @@ impl<T: Clone + Float> Complex<T> {
             let one = T::one();
             let two = one + one;
             let (r, theta) = self.to_polar();
-            Self::from_polar(&(r.sqrt()), &(theta / two))
+            Self::from_polar(r.sqrt(), theta / two)
         }
     }
 
@@ -261,7 +261,7 @@ impl<T: Clone + Float> Complex<T> {
     /// negative real numbers. For example, the real cube root of `-8` is `-2`,
     /// but the principal complex cube root of `-8` is `1 + i√3`.
     #[inline]
-    pub fn cbrt(&self) -> Self {
+    pub fn cbrt(self) -> Self {
         if self.im.is_zero() {
             if self.re.is_sign_positive() {
                 // simple positive real ∛r, and copy `im` for its sign
@@ -298,22 +298,22 @@ impl<T: Clone + Float> Complex<T> {
             let one = T::one();
             let three = one + one + one;
             let (r, theta) = self.to_polar();
-            Self::from_polar(&(r.cbrt()), &(theta / three))
+            Self::from_polar(r.cbrt(), theta / three)
         }
     }
 
     /// Raises `self` to a floating point power.
     #[inline]
-    pub fn powf(&self, exp: T) -> Self {
+    pub fn powf(self, exp: T) -> Self {
         // formula: x^y = (ρ e^(i θ))^y = ρ^y e^(i θ y)
         // = from_polar(ρ^y, θ y)
         let (r, theta) = self.to_polar();
-        Self::from_polar(&r.powf(exp), &(theta * exp))
+        Self::from_polar(r.powf(exp), theta * exp)
     }
 
     /// Returns the logarithm of `self` with respect to an arbitrary base.
     #[inline]
-    pub fn log(&self, base: T) -> Self {
+    pub fn log(self, base: T) -> Self {
         // formula: log_y(x) = log_y(ρ e^(i θ))
         // = log_y(ρ) + log_y(e^(i θ)) = log_y(ρ) + ln(e^(i θ)) / ln(y)
         // = log_y(ρ) + i θ / ln(y)
@@ -323,7 +323,7 @@ impl<T: Clone + Float> Complex<T> {
 
     /// Raises `self` to a complex power.
     #[inline]
-    pub fn powc(&self, exp: Self) -> Self {
+    pub fn powc(self, exp: Self) -> Self {
         // formula: x^y = (a + i b)^(c + i d)
         // = (ρ e^(i θ))^c (ρ e^(i θ))^(i d)
         //    where ρ=|x| and θ=arg(x)
@@ -337,22 +337,22 @@ impl<T: Clone + Float> Complex<T> {
         // = from_polar(p^c e^(−d θ), c θ + d ln(ρ))
         let (r, theta) = self.to_polar();
         Self::from_polar(
-            &(r.powf(exp.re) * (-exp.im * theta).exp()),
-            &(exp.re * theta + exp.im * r.ln()),
+            r.powf(exp.re) * (-exp.im * theta).exp(),
+            exp.re * theta + exp.im * r.ln(),
         )
     }
 
     /// Raises a floating point number to the complex power `self`.
     #[inline]
-    pub fn expf(&self, base: T) -> Self {
+    pub fn expf(self, base: T) -> Self {
         // formula: x^(a+bi) = x^a x^bi = x^a e^(b ln(x) i)
         // = from_polar(x^a, b ln(x))
-        Self::from_polar(&base.powf(self.re), &(self.im * base.ln()))
+        Self::from_polar(base.powf(self.re), self.im * base.ln())
     }
 
     /// Computes the sine of `self`.
     #[inline]
-    pub fn sin(&self) -> Self {
+    pub fn sin(self) -> Self {
         // formula: sin(a + bi) = sin(a)cosh(b) + i*cos(a)sinh(b)
         Self::new(
             self.re.sin() * self.im.cosh(),
@@ -362,7 +362,7 @@ impl<T: Clone + Float> Complex<T> {
 
     /// Computes the cosine of `self`.
     #[inline]
-    pub fn cos(&self) -> Self {
+    pub fn cos(self) -> Self {
         // formula: cos(a + bi) = cos(a)cosh(b) - i*sin(a)sinh(b)
         Self::new(
             self.re.cos() * self.im.cosh(),
@@ -372,7 +372,7 @@ impl<T: Clone + Float> Complex<T> {
 
     /// Computes the tangent of `self`.
     #[inline]
-    pub fn tan(&self) -> Self {
+    pub fn tan(self) -> Self {
         // formula: tan(a + bi) = (sin(2a) + i*sinh(2b))/(cos(2a) + cosh(2b))
         let (two_re, two_im) = (self.re + self.re, self.im + self.im);
         Self::new(two_re.sin(), two_im.sinh()).unscale(two_re.cos() + two_im.cosh())
@@ -387,7 +387,7 @@ impl<T: Clone + Float> Complex<T> {
     ///
     /// The branch satisfies `-π/2 ≤ Re(asin(z)) ≤ π/2`.
     #[inline]
-    pub fn asin(&self) -> Self {
+    pub fn asin(self) -> Self {
         // formula: arcsin(z) = -i ln(sqrt(1-z^2) + iz)
         let i = Self::i();
         -i * ((Self::one() - self * self).sqrt() + i * self).ln()
@@ -402,7 +402,7 @@ impl<T: Clone + Float> Complex<T> {
     ///
     /// The branch satisfies `0 ≤ Re(acos(z)) ≤ π`.
     #[inline]
-    pub fn acos(&self) -> Self {
+    pub fn acos(self) -> Self {
         // formula: arccos(z) = -i ln(i sqrt(1-z^2) + z)
         let i = Self::i();
         -i * (i * (Self::one() - self * self).sqrt() + self).ln()
@@ -417,14 +417,14 @@ impl<T: Clone + Float> Complex<T> {
     ///
     /// The branch satisfies `-π/2 ≤ Re(atan(z)) ≤ π/2`.
     #[inline]
-    pub fn atan(&self) -> Self {
+    pub fn atan(self) -> Self {
         // formula: arctan(z) = (ln(1+iz) - ln(1-iz))/(2i)
         let i = Self::i();
         let one = Self::one();
         let two = one + one;
-        if *self == i {
+        if self == i {
             return Self::new(T::zero(), T::infinity());
-        } else if *self == -i {
+        } else if self == -i {
             return Self::new(T::zero(), -T::infinity());
         }
         ((one + i * self).ln() - (one - i * self).ln()) / (two * i)
@@ -432,7 +432,7 @@ impl<T: Clone + Float> Complex<T> {
 
     /// Computes the hyperbolic sine of `self`.
     #[inline]
-    pub fn sinh(&self) -> Self {
+    pub fn sinh(self) -> Self {
         // formula: sinh(a + bi) = sinh(a)cos(b) + i*cosh(a)sin(b)
         Self::new(
             self.re.sinh() * self.im.cos(),
@@ -442,7 +442,7 @@ impl<T: Clone + Float> Complex<T> {
 
     /// Computes the hyperbolic cosine of `self`.
     #[inline]
-    pub fn cosh(&self) -> Self {
+    pub fn cosh(self) -> Self {
         // formula: cosh(a + bi) = cosh(a)cos(b) + i*sinh(a)sin(b)
         Self::new(
             self.re.cosh() * self.im.cos(),
@@ -452,7 +452,7 @@ impl<T: Clone + Float> Complex<T> {
 
     /// Computes the hyperbolic tangent of `self`.
     #[inline]
-    pub fn tanh(&self) -> Self {
+    pub fn tanh(self) -> Self {
         // formula: tanh(a + bi) = (sinh(2a) + i*sin(2b))/(cosh(2a) + cos(2b))
         let (two_re, two_im) = (self.re + self.re, self.im + self.im);
         Self::new(two_re.sinh(), two_im.sin()).unscale(two_re.cosh() + two_im.cos())
@@ -467,7 +467,7 @@ impl<T: Clone + Float> Complex<T> {
     ///
     /// The branch satisfies `-π/2 ≤ Im(asinh(z)) ≤ π/2`.
     #[inline]
-    pub fn asinh(&self) -> Self {
+    pub fn asinh(self) -> Self {
         // formula: arcsinh(z) = ln(z + sqrt(1+z^2))
         let one = Self::one();
         (self + (one + self * self).sqrt()).ln()
@@ -481,7 +481,7 @@ impl<T: Clone + Float> Complex<T> {
     ///
     /// The branch satisfies `-π ≤ Im(acosh(z)) ≤ π` and `0 ≤ Re(acosh(z)) < ∞`.
     #[inline]
-    pub fn acosh(&self) -> Self {
+    pub fn acosh(self) -> Self {
         // formula: arccosh(z) = 2 ln(sqrt((z+1)/2) + sqrt((z-1)/2))
         let one = Self::one();
         let two = one + one;
@@ -497,13 +497,13 @@ impl<T: Clone + Float> Complex<T> {
     ///
     /// The branch satisfies `-π/2 ≤ Im(atanh(z)) ≤ π/2`.
     #[inline]
-    pub fn atanh(&self) -> Self {
+    pub fn atanh(self) -> Self {
         // formula: arctanh(z) = (ln(1+z) - ln(1-z))/2
         let one = Self::one();
         let two = one + one;
-        if *self == one {
+        if self == one {
             return Self::new(T::infinity(), T::zero());
-        } else if *self == -one {
+        } else if self == -one {
             return Self::new(-T::infinity(), T::zero());
         }
         ((one + self).ln() - (one - self).ln()) / two
@@ -532,7 +532,7 @@ impl<T: Clone + Float> Complex<T> {
     /// assert!((inv - expected).norm() < 1e-315);
     /// ```
     #[inline]
-    pub fn finv(&self) -> Complex<T> {
+    pub fn finv(self) -> Complex<T> {
         let norm = self.norm();
         self.conj() / norm / norm
     }
@@ -561,12 +561,12 @@ impl<T: Clone + Float> Complex<T> {
     /// assert!((quotient - expected).norm() < 1e-315);
     /// ```
     #[inline]
-    pub fn fdiv(&self, other: Complex<T>) -> Complex<T> {
+    pub fn fdiv(self, other: Complex<T>) -> Complex<T> {
         self * other.finv()
     }
 }
 
-impl<T: Clone + FloatCore> Complex<T> {
+impl<T: FloatCore> Complex<T> {
     /// Checks if the given complex number is NaN
     #[inline]
     pub fn is_nan(self) -> bool {
@@ -1632,7 +1632,7 @@ mod test {
         fn test_polar_conv() {
             fn test(c: Complex64) {
                 let (r, theta) = c.to_polar();
-                assert!((c - Complex::from_polar(&r, &theta)).norm() < 1e-6);
+                assert!((c - Complex::from_polar(r, theta)).norm() < 1e-6);
             }
             for &c in all_consts.iter() {
                 test(c);
@@ -1775,12 +1775,12 @@ mod test {
                 let n2 = n * n;
                 assert!(close(
                     Complex64::new(0.0, n2).sqrt(),
-                    Complex64::from_polar(&n, &(f64::consts::FRAC_PI_4))
+                    Complex64::from_polar(n, f64::consts::FRAC_PI_4)
                 ));
                 // √(0 - n²i) = n e^(-iπ/4)
                 assert!(close(
                     Complex64::new(0.0, -n2).sqrt(),
-                    Complex64::from_polar(&n, &(-f64::consts::FRAC_PI_4))
+                    Complex64::from_polar(n, -f64::consts::FRAC_PI_4)
                 ));
             }
         }
@@ -1824,12 +1824,12 @@ mod test {
                 // ∛(-n³ + 0i) = n e^(iπ/3)
                 assert!(close(
                     Complex64::new(-n3, 0.0).cbrt(),
-                    Complex64::from_polar(&n, &(f64::consts::FRAC_PI_3))
+                    Complex64::from_polar(n, f64::consts::FRAC_PI_3)
                 ));
                 // ∛(-n³ - 0i) = n e^(-iπ/3)
                 assert!(close(
                     Complex64::new(-n3, -0.0).cbrt(),
-                    Complex64::from_polar(&n, &(-f64::consts::FRAC_PI_3))
+                    Complex64::from_polar(n, -f64::consts::FRAC_PI_3)
                 ));
             }
         }
@@ -1841,12 +1841,12 @@ mod test {
                 let n3 = n * n * n;
                 assert!(close(
                     Complex64::new(0.0, n3).cbrt(),
-                    Complex64::from_polar(&n, &(f64::consts::FRAC_PI_6))
+                    Complex64::from_polar(n, f64::consts::FRAC_PI_6)
                 ));
                 // ∛(0 - n³i) = n e^(-iπ/6)
                 assert!(close(
                     Complex64::new(0.0, -n3).cbrt(),
-                    Complex64::from_polar(&n, &(-f64::consts::FRAC_PI_6))
+                    Complex64::from_polar(n, -f64::consts::FRAC_PI_6)
                 ));
             }
         }
