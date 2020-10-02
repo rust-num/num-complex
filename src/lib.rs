@@ -653,7 +653,7 @@ macro_rules! forward_all_binop {
     };
 }
 
-/* arithmetic */
+// arithmetic
 forward_all_binop!(impl Add, add);
 
 // (a + i b) + (c + i d) == (a + c) + i (b + d)
@@ -1083,7 +1083,7 @@ impl<T: Clone + Num> Rem<T> for Complex<T> {
 
 real_arithmetic!(usize, u8, u16, u32, u64, u128, isize, i8, i16, i32, i64, i128, f32, f64);
 
-/* constants */
+// constants
 impl<T: Clone + Num> Zero for Complex<T> {
     #[inline]
     fn zero() -> Self {
@@ -1210,7 +1210,7 @@ macro_rules! write_complex {
     }};
 }
 
-/* string conversions */
+// string conversions
 impl<T> fmt::Display for Complex<T>
 where
     T: fmt::Display + Num + PartialOrd + Clone,
