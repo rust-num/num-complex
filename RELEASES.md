@@ -1,3 +1,9 @@
+# Release 0.3.1 (2020-10-29)
+
+- Clarify the license specification as "MIT OR Apache-2.0".
+
+**Contributors**: @cuviper
+
 # Release 0.3.0 (2020-06-13)
 
 ### Enhancements
