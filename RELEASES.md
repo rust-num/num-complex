@@ -1,3 +1,9 @@
+# Release 0.4.0 (2021-03-05)
+
+- `rand` support has been updated to 0.8, requiring Rust 1.36.
+
+**Contributors**: @cuviper
+
 # Release 0.3.1 (2020-10-29)
 
 - Clarify the license specification as "MIT OR Apache-2.0".
