@@ -28,7 +28,7 @@ if ! check_version $MSRV ; then
 fi
 
 FEATURES=(libm serde)
-check_version 1.32 && FEATURES+=(rand)
+check_version 1.36 && FEATURES+=(rand)
 echo "Testing supported features: ${FEATURES[*]}"
 
 set -x
