@@ -14,7 +14,7 @@
 //!
 //! The `num-complex` crate is tested for rustc 1.31 and greater.
 
-#![doc(html_root_url = "https://docs.rs/num-complex/0.3")]
+#![doc(html_root_url = "https://docs.rs/num-complex/0.4")]
 #![no_std]
 
 #[cfg(any(test, feature = "std"))]
