@@ -1301,7 +1301,7 @@ where
             neg_b = c == b'-';
 
             if b.is_empty() || (neg_b && b.starts_with('-')) {
-                return Err(ParseComplexError::new());
+                return Err(ParseComplexError::expr_error());
             }
             break;
         }
@@ -1328,7 +1328,7 @@ where
         im = b;
         neg_im = neg_b;
     } else {
-        return Err(ParseComplexError::new());
+        return Err(ParseComplexError::expr_error());
     }
 
     // parse re
@@ -1367,7 +1367,25 @@ impl<T: Num + Clone> Num for Complex<T> {
     type FromStrRadixErr = ParseComplexError<T::FromStrRadixErr>;
 
     /// Parses `a +/- bi`; `ai +/- b`; `a`; or `bi` where `a` and `b` are of type `T`
+    ///
+    /// `radix` must be <= 18; larger radix would include *i* and *j* as digits,
+    /// which cannot be supported.
+    ///
+    /// The conversion returns an error if 18 <= radix <= 36; it panics if radix > 36.
+    ///
+    /// The elements of `T` are parsed using `Num::from_str_radix` too, and errors
+    /// (or panics) from that are reflected here as well.
     fn from_str_radix(s: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr> {
+        assert!(
+            radix <= 36,
+            "from_str_radix: radix is too high (maximum 36)"
+        );
+
+        // larger radix would include 'i' and 'j' as digits, which cannot be supported
+        if radix > 18 {
+            return Err(ParseComplexError::unsupported_radix());
+        }
+
         from_str_generic(s, |x| -> Result<T, T::FromStrRadixErr> {
             T::from_str_radix(x, radix)
         })
@@ -1446,12 +1464,19 @@ pub struct ParseComplexError<E> {
 enum ComplexErrorKind<E> {
     ParseError(E),
     ExprError,
+    UnsupportedRadix,
 }
 
 impl<E> ParseComplexError<E> {
-    fn new() -> Self {
+    fn expr_error() -> Self {
         ParseComplexError {
             kind: ComplexErrorKind::ExprError,
+        }
+    }
+
+    fn unsupported_radix() -> Self {
+        ParseComplexError {
+            kind: ComplexErrorKind::UnsupportedRadix,
         }
     }
 
@@ -1469,6 +1494,7 @@ impl<E: Error> Error for ParseComplexError<E> {
         match self.kind {
             ComplexErrorKind::ParseError(ref e) => e.description(),
             ComplexErrorKind::ExprError => "invalid or unsupported complex expression",
+            ComplexErrorKind::UnsupportedRadix => "unsupported radix for conversion",
         }
     }
 }
@@ -1478,6 +1504,7 @@ impl<E: fmt::Display> fmt::Display for ParseComplexError<E> {
         match self.kind {
             ComplexErrorKind::ParseError(ref e) => e.fmt(f),
             ComplexErrorKind::ExprError => "invalid or unsupported complex expression".fmt(f),
+            ComplexErrorKind::UnsupportedRadix => "unsupported radix for conversion".fmt(f),
         }
     }
 }
@@ -1496,6 +1523,7 @@ mod test {
     #![allow(non_upper_case_globals)]
 
     use super::{Complex, Complex64};
+    use super::{ComplexErrorKind, ParseComplexError};
     use core::f64;
     use core::str::FromStr;
 
@@ -2560,6 +2588,33 @@ mod test {
         test(Complex::new(15.0, 32.0), "1111+100000i", 2);
         test(Complex::new(-15.0, -32.0), "-F-20i", 16);
         test(Complex::new(-15.0, -32.0), "-1111-100000i", 2);
+
+        fn test_error(s: &str, radix: u32) -> ParseComplexError<<f64 as Num>::FromStrRadixErr> {
+            let res = Complex64::from_str_radix(s, radix);
+
+            res.expect_err(&format!("Expected failure on input {:?}", s))
+        }
+
+        let err = test_error("1ii", 19);
+        if let ComplexErrorKind::UnsupportedRadix = err.kind {
+            /* pass */
+        } else {
+            panic!("Expected failure on invalid radix, got {:?}", err);
+        }
+
+        let err = test_error("1 + 0", 16);
+        if let ComplexErrorKind::ExprError = err.kind {
+            /* pass */
+        } else {
+            panic!("Expected failure on expr error, got {:?}", err);
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "radix is too high")]
+    fn test_from_str_radix_fail() {
+        // ensure we preserve the underlying panic on radix > 36
+        let _complex = Complex64::from_str_radix("1", 37);
     }
 
     #[test]
