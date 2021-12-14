@@ -211,7 +211,7 @@ impl<T: Float> Complex<T> {
     ///
     /// * `(-∞, 0)`, continuous from above.
     ///
-    /// The branch satisfies `-π/2 ≤ arg(sqrt(z)) ≤ π/2`.
+    /// The branch satisfies `-π/2 < arg(sqrt(z)) ≤ π/2`.
     #[inline]
     pub fn sqrt(self) -> Self {
         if self.im.is_zero() {
