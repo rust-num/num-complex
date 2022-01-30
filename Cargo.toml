@@ -14,9 +14,13 @@ exclude = ["/bors.toml", "/ci/*", "/.github/*"]
 edition = "2018"
 
 [package.metadata.docs.rs]
-features = ["std", "serde", "rand"]
+features = ["bytemuck", "std", "serde", "rand"]
 
 [dependencies]
+
+[dependencies.bytemuck]
+optional = true
+version = "1"
 
 [dependencies.num-traits]
 version = "0.2.11"
