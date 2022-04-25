@@ -161,6 +161,14 @@ impl<T: Clone + Signed> Complex<T> {
 
 #[cfg(any(feature = "std", feature = "libm"))]
 impl<T: Float> Complex<T> {
+    /// Create a new Complex with a given phase -- `exp(i * phase)`
+    ///
+    /// [cis (mathematics)]: https://en.wikipedia.org/wiki/Cis_(mathematics)
+    #[inline]
+    pub fn cis(phase: T) -> Self {
+        (Self::i() * phase).exp()
+    }
+
     /// Calculate |self|
     #[inline]
     pub fn norm(self) -> T {
