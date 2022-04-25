@@ -1610,6 +1610,15 @@ mod test {
         use num_traits::{Float, Pow};
 
         #[test]
+        fn test_cis() {
+            assert!(close(Complex::cis(0.0 * f64::consts::PI), _1_0i));
+            assert!(close(Complex::cis(0.5 * f64::consts::PI), _0_1i));
+            assert!(close(Complex::cis(1.0 * f64::consts::PI), -_1_0i));
+            assert!(close(Complex::cis(1.5 * f64::consts::PI), -_0_1i));
+            assert!(close(Complex::cis(2.0 * f64::consts::PI), _1_0i));
+        }
+
+        #[test]
         #[cfg_attr(target_arch = "x86", ignore)]
         // FIXME #7158: (maybe?) currently failing on x86.
         #[allow(clippy::float_cmp)]
