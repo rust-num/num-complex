@@ -592,13 +592,13 @@ impl<T: FloatCore> Complex<T> {
     }
 }
 
-/// Saftey: `Complex<T>` is `repr(C)` and contains only instances of `T`, so we
+/// Safety: `Complex<T>` is `repr(C)` and contains only instances of `T`, so we
 /// can guarantee it contains no *added* padding. Thus, if `T: Zeroable`,
 /// `Complex<T>` is also `Zeroable`
 #[cfg(feature = "bytemuck")]
 unsafe impl<T: bytemuck::Zeroable> bytemuck::Zeroable for Complex<T> {}
 
-/// Saftey: `Complex<T>` is `repr(C)` and contains only instances of `T`, so we
+/// Safety: `Complex<T>` is `repr(C)` and contains only instances of `T`, so we
 /// can guarantee it contains no *added* padding. Thus, if `T: Pod`,
 /// `Complex<T>` is also `Pod`
 #[cfg(feature = "bytemuck")]
