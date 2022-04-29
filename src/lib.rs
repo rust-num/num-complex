@@ -161,6 +161,13 @@ impl<T: Clone + Signed> Complex<T> {
 
 #[cfg(any(feature = "std", feature = "libm"))]
 impl<T: Float> Complex<T> {
+    /// Create a new Complex with a given phase: `exp(i * phase)`.
+    /// See [cis (mathematics)](https://en.wikipedia.org/wiki/Cis_(mathematics)).
+    #[inline]
+    pub fn cis(phase: T) -> Self {
+        Self::new(phase.cos(), phase.sin())
+    }
+
     /// Calculate |self|
     #[inline]
     pub fn norm(self) -> T {
@@ -1628,6 +1635,15 @@ mod test {
     mod float {
         use super::*;
         use num_traits::{Float, Pow};
+
+        #[test]
+        fn test_cis() {
+            assert!(close(Complex::cis(0.0 * f64::consts::PI), _1_0i));
+            assert!(close(Complex::cis(0.5 * f64::consts::PI), _0_1i));
+            assert!(close(Complex::cis(1.0 * f64::consts::PI), -_1_0i));
+            assert!(close(Complex::cis(1.5 * f64::consts::PI), -_0_1i));
+            assert!(close(Complex::cis(2.0 * f64::consts::PI), _1_0i));
+        }
 
         #[test]
         #[cfg_attr(target_arch = "x86", ignore)]
