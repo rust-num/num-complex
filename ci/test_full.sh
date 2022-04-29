@@ -27,7 +27,8 @@ if ! check_version $MSRV ; then
   exit 1
 fi
 
-FEATURES=(libm serde bytemuck)
+FEATURES=(libm serde)
+check_version 1.34 && FEATURES+=(bytemuck)
 check_version 1.36 && FEATURES+=(rand)
 echo "Testing supported features: ${FEATURES[*]}"
 
