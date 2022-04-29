@@ -1610,11 +1610,11 @@ mod test {
 
         #[test]
         fn test_cis() {
-            assert!(close(Complex::cis(0.00 * f64::consts::TAU), _1_0i));
-            assert!(close(Complex::cis(0.25 * f64::consts::TAU), _0_1i));
-            assert!(close(Complex::cis(0.50 * f64::consts::TAU), -_1_0i));
-            assert!(close(Complex::cis(0.75 * f64::consts::TAU), -_0_1i));
-            assert!(close(Complex::cis(1.00 * f64::consts::TAU), _1_0i));
+            assert!(close(Complex::cis(0.0 * f64::consts::PI), _1_0i));
+            assert!(close(Complex::cis(0.5 * f64::consts::PI), _0_1i));
+            assert!(close(Complex::cis(1.0 * f64::consts::PI), -_1_0i));
+            assert!(close(Complex::cis(1.5 * f64::consts::PI), -_0_1i));
+            assert!(close(Complex::cis(2.0 * f64::consts::PI), _1_0i));
         }
 
         #[test]
