@@ -28,6 +28,7 @@ if ! check_version $MSRV ; then
 fi
 
 FEATURES=(libm serde)
+check_version 1.34 && FEATURES+=(bytemuck)
 check_version 1.36 && FEATURES+=(rand)
 echo "Testing supported features: ${FEATURES[*]}"
 
