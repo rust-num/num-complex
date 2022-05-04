@@ -1,15 +1,30 @@
 // Keeps us from accidentally creating a recursive impl rather than a real one.
 #![deny(unconditional_recursion)]
+#![cfg(any(feature = "std", feature = "libm"))]
 
-use num_traits::{float::FloatCore, Float, FloatConst};
+use core::ops::Neg;
+
+use num_traits::{float::FloatCore, Float, FloatConst, Num, NumCast, Signed};
 
 use crate::Complex;
 
+mod private {
+    use num_traits::{float::FloatCore, Float, FloatConst, Signed};
+
+    use crate::Complex;
+
+    pub trait Seal {}
+
+    impl<T> Seal for T where T: Float + FloatConst {}
+    impl<T: Float + FloatCore + FloatConst + Signed> Seal for Complex<T> {}
+}
+
 /// Generic trait for floating point complex numbers
 /// This trait defines methods which are common to complex floating point numbers and regular floating point numbers.
-#[cfg(any(feature = "std", feature = "libm"))]
-pub trait ComplexFloat {
-    type Real;
+/// This trait is sealed to prevent it from being implemented by anything other than floating point scalars and [Complex] floats.
+pub trait ComplexFloat: Num + NumCast + Copy + Neg<Output = Self> + private::Seal {
+    /// The type used to represent the real coefficients of this complex number.
+    type Real: Float + FloatConst;
 
     /// Returns `true` if this value is `NaN` and false otherwise.
     fn is_nan(self) -> bool;
@@ -22,11 +37,10 @@ pub trait ComplexFloat {
     fn is_finite(self) -> bool;
 
     /// Returns `true` if the number is neither zero, infinite,
-    /// [subnormal][subnormal], or `NaN`.
-    /// [subnormal]: http://en.wikipedia.org/wiki/Denormal_number
+    /// [subnormal](http://en.wikipedia.org/wiki/Denormal_number), or `NaN`.
     fn is_normal(self) -> bool;
 
-    /// Take the reciprocal (inverse) of a number, `1/x`.
+    /// Take the reciprocal (inverse) of a number, `1/x`. See also [Complex::finv].
     fn recip(self) -> Self;
 
     /// Raises `self` to a signed integer power.
@@ -46,6 +60,9 @@ pub trait ComplexFloat {
 
     /// Returns `2^(self)`.
     fn exp2(self) -> Self;
+
+    /// Returns `base^(self)`.
+    fn expf(self, base: Self::Real) -> Self;
 
     /// Returns the natural logarithm of the number.
     fn ln(self) -> Self;
@@ -106,16 +123,21 @@ pub trait ComplexFloat {
     /// Returns the real part of the number.
     fn re(self) -> Self::Real;
 
-    /// Returns the imaginary part of the number which equals to zero.
+    /// Returns the imaginary part of the number.
     fn im(self) -> Self::Real;
 
-    /// Returns the absolute value of the number.
+    /// Returns the absolute value of the number. See also [Complex::norm]
     fn abs(self) -> Self::Real;
+
+    /// Returns the L1 norm `|re| + |im|` -- the [Manhattan distance] from the origin.
+    ///
+    /// [Manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry
+    fn l1_norm(&self) -> Self::Real;
 
     /// Computes the argument of the number.
     fn arg(self) -> Self::Real;
 
-    /// Comutes the complex conjugate of `self`.
+    /// Computes the complex conjugate of the number.
     ///
     /// Formula: `a+bi -> a-bi`
     fn conj(self) -> Self;
@@ -141,7 +163,6 @@ macro_rules! forward_ref {
         )*};
 }
 
-#[cfg(any(feature = "std", feature = "libm"))]
 impl<T> ComplexFloat for T
 where
     T: Float + FloatConst,
@@ -156,7 +177,7 @@ where
         T::zero()
     }
 
-    fn abs(self) -> Self::Real {
+    fn l1_norm(&self) -> Self::Real {
         self.abs()
     }
 
@@ -176,6 +197,10 @@ where
 
     fn conj(self) -> Self {
         self
+    }
+
+    fn expf(self, base: Self::Real) -> Self {
+        base.powf(self)
     }
 
     forward! {
@@ -206,11 +231,11 @@ where
         Float::asinh(self) -> Self;
         Float::acosh(self) -> Self;
         Float::atanh(self) -> Self;
+        Float::abs(self) -> Self;
     }
 }
 
-#[cfg(any(feature = "std", feature = "libm"))]
-impl<T: Float + FloatCore + FloatConst> ComplexFloat for Complex<T> {
+impl<T: Float + FloatCore + FloatConst + Signed> ComplexFloat for Complex<T> {
     type Real = T;
 
     fn re(self) -> Self::Real {
@@ -229,6 +254,10 @@ impl<T: Float + FloatCore + FloatConst> ComplexFloat for Complex<T> {
         self.finv()
     }
 
+    fn l1_norm(&self) -> Self::Real {
+        Complex::l1_norm(self)
+    }
+
     forward! {
         Complex::arg(self) -> Self::Real;
         Complex::powc(self, exp: Complex<Self::Real>) -> Complex<Self::Real>;
@@ -244,6 +273,7 @@ impl<T: Float + FloatCore + FloatConst> ComplexFloat for Complex<T> {
         Complex::sqrt(self) -> Self;
         Complex::cbrt(self) -> Self;
         Complex::exp(self) -> Self;
+        Complex::expf(self, base: Self::Real) -> Self;
         Complex::ln(self) -> Self;
         Complex::sin(self) -> Self;
         Complex::cos(self) -> Self;

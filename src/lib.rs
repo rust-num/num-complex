@@ -36,10 +36,14 @@ use num_traits::{FloatConst, Inv, MulAdd, Num, One, Pow, Signed, Zero};
 use num_traits::float::Float;
 use num_traits::float::FloatCore;
 
+#[cfg(any(feature = "std", feature = "libm"))]
+mod complex_float;
+
 mod cast;
 mod pow;
 
-pub mod complex_float;
+#[cfg(any(feature = "std", feature = "libm"))]
+pub use complex_float::ComplexFloat;
 
 #[cfg(feature = "rand")]
 mod crand;
@@ -574,7 +578,7 @@ impl<T: Float + FloatConst> Complex<T> {
     #[inline]
     pub fn exp2(self) -> Self {
         // formula: 2^(a + bi) = 2^a (cos(b*log2) + i*sin(b*log2))
-        // = from_polar(e^a, b)
+        // = from_polar(2^a, b*log2)
         Self::from_polar(self.re.exp2(), self.im * T::LN_2())
     }
 
