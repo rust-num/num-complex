@@ -5,7 +5,7 @@
 - [`Complex<T>` now implements `bytemuck` traits when `T` does][100].
 - [`Complex::cis` creates a complex with the given phase][101], _e_<sup>_i_ θ</sup>.
 
-**Contributors**: @bluss, @bradleyharden, @cglosser, @cuviper
+**Contributors**: @bluss, @bradleyharden, @cuviper, @rayhem
 
 [90]: https://github.com/rust-num/num-complex/pull/90
 [100]: https://github.com/rust-num/num-complex/pull/100
