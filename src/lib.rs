@@ -1569,31 +1569,31 @@ mod test {
 
     use num_traits::{Num, One, Zero};
 
-    pub const _0_0i: Complex64 = Complex { re: 0.0, im: 0.0 };
-    pub const _1_0i: Complex64 = Complex { re: 1.0, im: 0.0 };
-    pub const _1_1i: Complex64 = Complex { re: 1.0, im: 1.0 };
-    pub const _0_1i: Complex64 = Complex { re: 0.0, im: 1.0 };
-    pub const _neg1_1i: Complex64 = Complex { re: -1.0, im: 1.0 };
-    pub const _05_05i: Complex64 = Complex { re: 0.5, im: 0.5 };
+    pub const _0_0i: Complex64 = Complex::new(0.0, 0.0);
+    pub const _1_0i: Complex64 = Complex::new(1.0, 0.0);
+    pub const _1_1i: Complex64 = Complex::new(1.0, 1.0);
+    pub const _0_1i: Complex64 = Complex::new(0.0, 1.0);
+    pub const _neg1_1i: Complex64 = Complex::new(-1.0, 1.0);
+    pub const _05_05i: Complex64 = Complex::new(0.5, 0.5);
     pub const all_consts: [Complex64; 5] = [_0_0i, _1_0i, _1_1i, _neg1_1i, _05_05i];
-    pub const _4_2i: Complex64 = Complex { re: 4.0, im: 2.0 };
-    pub const _1_infi: Complex64 = Complex { re: 1.0, im: f64::INFINITY};
-    pub const _neg1_infi: Complex64 = Complex { re: -1.0, im: f64::INFINITY};
-    pub const _1_nani: Complex64 = Complex { re: 1.0, im: f64::NAN};
-    pub const _neg1_nani: Complex64 = Complex { re: -1.0, im: f64::NAN};
-    pub const _inf_0i: Complex64 = Complex { re: f64::INFINITY, im: 0.0};
-    pub const _neginf_1i: Complex64 = Complex { re: f64::NEG_INFINITY, im: 1.0};
-    pub const _neginf_neg1i: Complex64 = Complex { re: f64::NEG_INFINITY, im: -1.0};
-    pub const _inf_1i: Complex64 = Complex { re: f64::INFINITY, im: 1.0};
-    pub const _inf_neg1i: Complex64 = Complex { re: f64::INFINITY, im: -1.0};
-    pub const _neginf_infi: Complex64 = Complex { re: f64::NEG_INFINITY, im: f64::INFINITY};
-    pub const _inf_infi: Complex64 = Complex { re: f64::INFINITY, im: f64::INFINITY};
-    pub const _neginf_nani: Complex64 = Complex {re: f64::NEG_INFINITY, im: f64::NAN};
-    pub const _inf_nani: Complex64 = Complex {re: f64::INFINITY, im: f64::NAN};
-    pub const _nan_0i: Complex64 = Complex {re: f64::NAN, im: 0.0};
-    pub const _nan_1i: Complex64 = Complex {re: f64::NAN, im: 1.0};
-    pub const _nan_neg1i: Complex64 = Complex {re: f64::NAN, im: -1.0};
-    pub const _nan_nani: Complex64 = Complex {re: f64::NAN, im: f64::NAN};
+    pub const _4_2i: Complex64 = Complex::new(4.0, 2.0);
+    pub const _1_infi: Complex64 = Complex::new(1.0, f64::INFINITY);
+    pub const _neg1_infi: Complex64 = Complex::new(-1.0, f64::INFINITY);
+    pub const _1_nani: Complex64 = Complex::new(1.0, f64::NAN);
+    pub const _neg1_nani: Complex64 = Complex::new(-1.0, f64::NAN);
+    pub const _inf_0i: Complex64 = Complex::new(f64::INFINITY, 0.0);
+    pub const _neginf_1i: Complex64 = Complex::new(f64::NEG_INFINITY, 1.0);
+    pub const _neginf_neg1i: Complex64 = Complex::new(f64::NEG_INFINITY, -1.0);
+    pub const _inf_1i: Complex64 = Complex::new(f64::INFINITY, 1.0);
+    pub const _inf_neg1i: Complex64 = Complex::new(f64::INFINITY, -1.0);
+    pub const _neginf_infi: Complex64 = Complex::new(f64::NEG_INFINITY, f64::INFINITY);
+    pub const _inf_infi: Complex64 = Complex::new(f64::INFINITY, f64::INFINITY);
+    pub const _neginf_nani: Complex64 = Complex::new(f64::NEG_INFINITY, f64::NAN);
+    pub const _inf_nani: Complex64 = Complex::new(f64::INFINITY, f64::NAN);
+    pub const _nan_0i: Complex64 = Complex::new(f64::NAN, 0.0);
+    pub const _nan_1i: Complex64 = Complex::new(f64::NAN, 1.0);
+    pub const _nan_neg1i: Complex64 = Complex::new(f64::NAN, -1.0);
+    pub const _nan_nani: Complex64 = Complex::new(f64::NAN, f64::NAN);
 
     #[test]
     fn test_consts() {
