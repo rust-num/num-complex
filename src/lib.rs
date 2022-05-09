@@ -1808,6 +1808,7 @@ mod test {
                 ));
             }
 
+            // The test values below were taken from https://en.cppreference.com/w/cpp/numeric/complex/exp
             assert!(close_naninf(_1_infi.exp(), _nan_nani));
             assert!(close_naninf(_neg1_infi.exp(), _nan_nani)); 
             assert!(close_naninf(_1_nani.exp(), _nan_nani)); 
