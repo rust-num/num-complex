@@ -194,7 +194,7 @@ impl<T: Float> Complex<T> {
     #[inline]
     pub fn exp(self) -> Self {
         // formula: e^(a + bi) = e^a (cos(b) + i*sin(b)) = from_polar(e^a, b)
-        
+
         // Treat the corner cases +∞, -∞, and NaN
         let mut im = self.im;
         if self.re.is_infinite() {
@@ -211,8 +211,8 @@ impl<T: Float> Complex<T> {
                 }
             }
         } else if self.re.is_nan() && self.im == T::zero() {
-                return self;
-        } 
+            return self;
+        }
 
         Self::from_polar(self.re.exp(), im)
     }
@@ -1744,40 +1744,47 @@ mod test {
             close
         }
 
-        
         // Version that also works if re or im are +inf, -inf, or nan
         fn close_naninf(a: Complex64, b: Complex64) -> bool {
             close_naninf_to_tol(a, b, 1.0e-10)
         }
 
-
         fn close_naninf_to_tol(a: Complex64, b: Complex64, tol: f64) -> bool {
-    
             let mut close = true;
 
             // Compare the real parts
             if a.re.is_finite() {
                 if b.re.is_finite() {
-                    close = (a.re == b.re) || (a.re - b.re).abs() < tol;   
+                    close = (a.re == b.re) || (a.re - b.re).abs() < tol;
                 } else {
-                    close = false; 
+                    close = false;
                 }
             } else if (a.re.is_nan() && !b.re.is_nan())
-                    || (a.re.is_infinite() && a.re.is_sign_positive() && !(b.re.is_infinite() && b.re.is_sign_positive()))
-                    || (a.re.is_infinite() && a.re.is_sign_negative() && !(b.re.is_infinite() && b.re.is_sign_negative())) { 
+                || (a.re.is_infinite()
+                    && a.re.is_sign_positive()
+                    && !(b.re.is_infinite() && b.re.is_sign_positive()))
+                || (a.re.is_infinite()
+                    && a.re.is_sign_negative()
+                    && !(b.re.is_infinite() && b.re.is_sign_negative()))
+            {
                 close = false;
             }
-        
+
             // Compare the imaginary parts
             if a.im.is_finite() {
                 if b.im.is_finite() {
-                    close = (a.im == b.im) || (a.im - b.im).abs() < tol;   
+                    close = (a.im == b.im) || (a.im - b.im).abs() < tol;
                 } else {
-                   close = false; 
+                    close = false;
                 }
             } else if (a.im.is_nan() && !b.im.is_nan())
-                    || (a.im.is_infinite() && a.im.is_sign_positive() && !(b.im.is_infinite() && b.im.is_sign_positive()))
-                    || (a.im.is_infinite() && a.im.is_sign_negative() && !(b.im.is_infinite() && b.im.is_sign_negative())) { 
+                || (a.im.is_infinite()
+                    && a.im.is_sign_positive()
+                    && !(b.im.is_infinite() && b.im.is_sign_positive()))
+                || (a.im.is_infinite()
+                    && a.im.is_sign_negative()
+                    && !(b.im.is_infinite() && b.im.is_sign_negative()))
+            {
                 close = false;
             }
 
@@ -1786,7 +1793,6 @@ mod test {
             }
             close
         }
-
 
         #[test]
         fn test_exp() {
@@ -1810,21 +1816,27 @@ mod test {
 
             // The test values below were taken from https://en.cppreference.com/w/cpp/numeric/complex/exp
             assert!(close_naninf(_1_infi.exp(), _nan_nani));
-            assert!(close_naninf(_neg1_infi.exp(), _nan_nani)); 
-            assert!(close_naninf(_1_nani.exp(), _nan_nani)); 
+            assert!(close_naninf(_neg1_infi.exp(), _nan_nani));
+            assert!(close_naninf(_1_nani.exp(), _nan_nani));
             assert!(close_naninf(_neg1_nani.exp(), _nan_nani));
             assert!(close_naninf(_inf_0i.exp(), _inf_0i));
             assert!(close_naninf(_neginf_1i.exp(), 0.0 * Complex::cis(1.0)));
             assert!(close_naninf(_neginf_neg1i.exp(), 0.0 * Complex::cis(-1.0)));
-            assert!(close_naninf(_inf_1i.exp(), f64::INFINITY * Complex::cis(1.0)));
-            assert!(close_naninf(_inf_neg1i.exp(), f64::INFINITY * Complex::cis(-1.0)));
-            assert!(close_naninf(_neginf_infi.exp(), _0_0i));            // Note: ±0±0i: signs of zeros are unspecified 
-            assert!(close_naninf(_inf_infi.exp(), _inf_nani));           // Note: ±∞+NaN*i: sign of the real part is unspecified
-            assert!(close_naninf(_neginf_nani.exp(), _0_0i));            // Note: ±0±0i: signs of zeros are unspecified 
-            assert!(close_naninf(_inf_nani.exp(), _inf_nani));           // Note: ±∞+NaN*i: sign of the real part is unspecified 
+            assert!(close_naninf(
+                _inf_1i.exp(),
+                f64::INFINITY * Complex::cis(1.0)
+            ));
+            assert!(close_naninf(
+                _inf_neg1i.exp(),
+                f64::INFINITY * Complex::cis(-1.0)
+            ));
+            assert!(close_naninf(_neginf_infi.exp(), _0_0i)); // Note: ±0±0i: signs of zeros are unspecified
+            assert!(close_naninf(_inf_infi.exp(), _inf_nani)); // Note: ±∞+NaN*i: sign of the real part is unspecified
+            assert!(close_naninf(_neginf_nani.exp(), _0_0i)); // Note: ±0±0i: signs of zeros are unspecified
+            assert!(close_naninf(_inf_nani.exp(), _inf_nani)); // Note: ±∞+NaN*i: sign of the real part is unspecified
             assert!(close_naninf(_nan_0i.exp(), _nan_0i));
             assert!(close_naninf(_nan_1i.exp(), _nan_nani));
-            assert!(close_naninf(_nan_neg1i.exp(), _nan_nani)); 
+            assert!(close_naninf(_nan_neg1i.exp(), _nan_nani));
             assert!(close_naninf(_nan_nani.exp(), _nan_nani));
         }
 
