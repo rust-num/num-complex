@@ -1813,10 +1813,10 @@ mod test {
             assert!(close_naninf(_1_nani.exp(), _nan_nani)); 
             assert!(close_naninf(_neg1_nani.exp(), _nan_nani));
             assert!(close_naninf(_inf_0i.exp(), _inf_0i));
-            assert!(close_naninf(_neginf_1i.exp(), 0.0 * Complex64::new(1.0.cos(), 1.0.sin()))); 
-            assert!(close_naninf(_neginf_neg1i.exp(), 0.0 * Complex64::new((-1.0).cos(), (-1.0).sin()))); 
-            assert!(close_naninf(_inf_1i.exp(), f64::INFINITY * Complex64::new(1.0.cos(), 1.0.sin())));  
-            assert!(close_naninf(_inf_neg1i.exp(), f64::INFINITY * Complex64::new((-1.0).cos(), (-1.0).sin()))); 
+            assert!(close_naninf(_neginf_1i.exp(), 0.0 * Complex::cis(1.0)));
+            assert!(close_naninf(_neginf_neg1i.exp(), 0.0 * Complex::cis(-1.0)));
+            assert!(close_naninf(_inf_1i.exp(), f64::INFINITY * Complex::cis(1.0)));
+            assert!(close_naninf(_inf_neg1i.exp(), f64::INFINITY * Complex::cis(-1.0)));
             assert!(close_naninf(_neginf_infi.exp(), _0_0i));            // Note: ±0±0i: signs of zeros are unspecified 
             assert!(close_naninf(_inf_infi.exp(), _inf_nani));           // Note: ±∞+NaN*i: sign of the real part is unspecified
             assert!(close_naninf(_neginf_nani.exp(), _0_0i));            // Note: ±0±0i: signs of zeros are unspecified 
