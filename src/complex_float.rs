@@ -185,12 +185,12 @@ where
     }
 
     fn arg(self) -> Self::Real {
-        if self > T::zero() {
-            T::zero()
-        } else if self < T::zero() {
+        if self.is_nan() {
+            self
+        } else if self.is_sign_negative() {
             T::PI()
         } else {
-            T::nan()
+            T::zero()
         }
     }
 
@@ -430,6 +430,9 @@ mod test {
         ));
 
         assert!(closef(ComplexFloat::arg(-1.), core::f64::consts::PI));
+        assert!(closef(ComplexFloat::arg(-0.), core::f64::consts::PI));
+        assert!(closef(ComplexFloat::arg(0.), 0.));
         assert!(closef(ComplexFloat::arg(1.), 0.));
+        assert!(ComplexFloat::arg(f64::NAN).is_nan());
     }
 }
