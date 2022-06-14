@@ -1,6 +1,5 @@
 // Keeps us from accidentally creating a recursive impl rather than a real one.
 #![deny(unconditional_recursion)]
-#![cfg(any(feature = "std", feature = "libm"))]
 
 use core::ops::Neg;
 
@@ -19,9 +18,13 @@ mod private {
     impl<T: Float + FloatConst> Seal for Complex<T> {}
 }
 
-/// Generic trait for floating point complex numbers
-/// This trait defines methods which are common to complex floating point numbers and regular floating point numbers.
-/// This trait is sealed to prevent it from being implemented by anything other than floating point scalars and [Complex] floats.
+/// Generic trait for floating point complex numbers.
+///
+/// This trait defines methods which are common to complex floating point
+/// numbers and regular floating point numbers.
+///
+/// This trait is sealed to prevent it from being implemented by anything other
+/// than floating point scalars and [Complex] floats.
 pub trait ComplexFloat: Num + NumCast + Copy + Neg<Output = Self> + private::Seal {
     /// The type used to represent the real coefficients of this complex number.
     type Real: Float + FloatConst;
@@ -192,7 +195,7 @@ where
     }
 
     fn powc(self, exp: Complex<Self::Real>) -> Complex<Self::Real> {
-        Complex::new(self, Self::Real::zero()).powc(exp)
+        Complex::new(self, T::zero()).powc(exp)
     }
 
     fn conj(self) -> Self {

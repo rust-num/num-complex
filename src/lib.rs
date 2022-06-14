@@ -30,20 +30,19 @@ use core::str::FromStr;
 #[cfg(feature = "std")]
 use std::error::Error;
 
-use num_traits::{FloatConst, Inv, MulAdd, Num, One, Pow, Signed, Zero};
+use num_traits::{Inv, MulAdd, Num, One, Pow, Signed, Zero};
 
-#[cfg(any(feature = "std", feature = "libm"))]
-use num_traits::float::Float;
 use num_traits::float::FloatCore;
-
 #[cfg(any(feature = "std", feature = "libm"))]
-mod complex_float;
+use num_traits::float::{Float, FloatConst};
 
 mod cast;
 mod pow;
 
 #[cfg(any(feature = "std", feature = "libm"))]
-pub use complex_float::ComplexFloat;
+mod complex_float;
+#[cfg(any(feature = "std", feature = "libm"))]
+pub use crate::complex_float::ComplexFloat;
 
 #[cfg(feature = "rand")]
 mod crand;
