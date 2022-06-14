@@ -4,19 +4,19 @@
 
 use core::ops::Neg;
 
-use num_traits::{float::FloatCore, Float, FloatConst, Num, NumCast, Signed};
+use num_traits::{Float, FloatConst, Num, NumCast};
 
 use crate::Complex;
 
 mod private {
-    use num_traits::{float::FloatCore, Float, FloatConst, Signed};
+    use num_traits::{Float, FloatConst};
 
     use crate::Complex;
 
     pub trait Seal {}
 
     impl<T> Seal for T where T: Float + FloatConst {}
-    impl<T: Float + FloatCore + FloatConst + Signed> Seal for Complex<T> {}
+    impl<T: Float + FloatConst> Seal for Complex<T> {}
 }
 
 /// Generic trait for floating point complex numbers
@@ -235,7 +235,7 @@ where
     }
 }
 
-impl<T: Float + FloatCore + FloatConst + Signed> ComplexFloat for Complex<T> {
+impl<T: Float + FloatConst> ComplexFloat for Complex<T> {
     type Real = T;
 
     fn re(self) -> Self::Real {
@@ -254,8 +254,28 @@ impl<T: Float + FloatCore + FloatConst + Signed> ComplexFloat for Complex<T> {
         self.finv()
     }
 
+    // `Complex::l1_norm` uses `Signed::abs` to let it work
+    // for integers too, but we can just use `Float::abs`.
     fn l1_norm(&self) -> Self::Real {
-        Complex::l1_norm(self)
+        self.re.abs() + self.im.abs()
+    }
+
+    // `Complex::is_*` methods use `T: FloatCore`, but we
+    // have `T: Float` that can do them as well.
+    fn is_nan(self) -> bool {
+        self.re.is_nan() || self.im.is_nan()
+    }
+
+    fn is_infinite(self) -> bool {
+        !self.is_nan() && (self.re.is_infinite() || self.im.is_infinite())
+    }
+
+    fn is_finite(self) -> bool {
+        self.re.is_finite() && self.im.is_finite()
+    }
+
+    fn is_normal(self) -> bool {
+        self.re.is_normal() && self.im.is_normal()
     }
 
     forward! {
@@ -265,10 +285,6 @@ impl<T: Float + FloatCore + FloatConst + Signed> ComplexFloat for Complex<T> {
         Complex::log(self, base: Self::Real) -> Self;
         Complex::log2(self) -> Self;
         Complex::log10(self) -> Self;
-        Complex::is_normal(self) -> bool;
-        Complex::is_infinite(self) -> bool;
-        Complex::is_finite(self) -> bool;
-        Complex::is_nan(self) -> bool;
         Complex::powf(self, f: Self::Real) -> Self;
         Complex::sqrt(self) -> Self;
         Complex::cbrt(self) -> Self;
