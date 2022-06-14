@@ -195,26 +195,26 @@ impl<T: Float> Complex<T> {
     pub fn exp(self) -> Self {
         // formula: e^(a + bi) = e^a (cos(b) + i*sin(b)) = from_polar(e^a, b)
 
+        let Complex { re, mut im } = self;
         // Treat the corner cases +∞, -∞, and NaN
-        let mut im = self.im;
-        if self.re.is_infinite() {
-            if self.re < T::zero() {
-                if !self.im.is_finite() {
-                    im = T::one();
+        if re.is_infinite() {
+            if re < T::zero() {
+                if !im.is_finite() {
+                    return Self::new(T::zero(), T::zero());
                 }
             } else {
-                if self.im == T::zero() || !self.im.is_finite() {
-                    if self.im.is_infinite() {
+                if im == T::zero() || !im.is_finite() {
+                    if im.is_infinite() {
                         im = T::nan();
                     }
-                    return Self::new(self.re, im);
+                    return Self::new(re, im);
                 }
             }
-        } else if self.re.is_nan() && self.im == T::zero() {
+        } else if re.is_nan() && im == T::zero() {
             return self;
         }
 
-        Self::from_polar(self.re.exp(), im)
+        Self::from_polar(re.exp(), im)
     }
 
     /// Computes the principal value of natural logarithm of `self`.
