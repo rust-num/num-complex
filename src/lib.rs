@@ -1773,7 +1773,7 @@ mod test {
             // Compare the imaginary parts
             if a.im.is_finite() {
                 if b.im.is_finite() {
-                    close = (a.im == b.im) || (a.im - b.im).abs() < tol;
+                    close &= (a.im == b.im) || (a.im - b.im).abs() < tol;
                 } else {
                     close = false;
                 }
