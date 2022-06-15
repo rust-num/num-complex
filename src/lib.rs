@@ -32,12 +32,17 @@ use std::error::Error;
 
 use num_traits::{Inv, MulAdd, Num, One, Pow, Signed, Zero};
 
-#[cfg(any(feature = "std", feature = "libm"))]
-use num_traits::float::Float;
 use num_traits::float::FloatCore;
+#[cfg(any(feature = "std", feature = "libm"))]
+use num_traits::float::{Float, FloatConst};
 
 mod cast;
 mod pow;
+
+#[cfg(any(feature = "std", feature = "libm"))]
+mod complex_float;
+#[cfg(any(feature = "std", feature = "libm"))]
+pub use crate::complex_float::ComplexFloat;
 
 #[cfg(feature = "rand")]
 mod crand;
@@ -570,6 +575,29 @@ impl<T: Float> Complex<T> {
     #[inline]
     pub fn fdiv(self, other: Complex<T>) -> Complex<T> {
         self * other.finv()
+    }
+}
+
+#[cfg(any(feature = "std", feature = "libm"))]
+impl<T: Float + FloatConst> Complex<T> {
+    /// Computes `2^(self)`.
+    #[inline]
+    pub fn exp2(self) -> Self {
+        // formula: 2^(a + bi) = 2^a (cos(b*log2) + i*sin(b*log2))
+        // = from_polar(2^a, b*log2)
+        Self::from_polar(self.re.exp2(), self.im * T::LN_2())
+    }
+
+    /// Computes the principal value of log base 2 of `self`.
+    #[inline]
+    pub fn log2(self) -> Self {
+        Self::ln(self) / T::LN_2()
+    }
+
+    /// Computes the principal value of log base 10 of `self`.
+    #[inline]
+    pub fn log10(self) -> Self {
+        Self::ln(self) / T::LN_10()
     }
 }
 
@@ -1538,7 +1566,7 @@ fn hash<T: hash::Hash>(x: &T) -> u64 {
 }
 
 #[cfg(test)]
-mod test {
+pub(crate) mod test {
     #![allow(non_upper_case_globals)]
 
     use super::{Complex, Complex64};
@@ -1644,7 +1672,7 @@ mod test {
     }
 
     #[cfg(any(feature = "std", feature = "libm"))]
-    mod float {
+    pub(crate) mod float {
         use super::*;
         use num_traits::{Float, Pow};
 
@@ -1695,7 +1723,7 @@ mod test {
             }
         }
 
-        fn close(a: Complex64, b: Complex64) -> bool {
+        pub(crate) fn close(a: Complex64, b: Complex64) -> bool {
             close_to_tol(a, b, 1e-10)
         }
 
@@ -1706,6 +1734,11 @@ mod test {
                 println!("{:?} != {:?}", a, b);
             }
             close
+        }
+
+        #[test]
+        fn test_exp2() {
+            assert!(close(_0_0i.exp2(), _1_0i));
         }
 
         #[test]
@@ -1774,6 +1807,16 @@ mod test {
             let c = Complex::new(2.0, -1.0);
             let r = c.log(10.0);
             assert!(close_to_tol(r, Complex::new(0.349485, -0.20135958), 1e-5));
+        }
+
+        #[test]
+        fn test_log2() {
+            assert!(close(_1_0i.log2(), _0_0i));
+        }
+
+        #[test]
+        fn test_log10() {
+            assert!(close(_1_0i.log10(), _0_0i));
         }
 
         #[test]
@@ -2119,6 +2162,14 @@ mod test {
             for &c in all_consts.iter() {
                 // e^ln(z) = z
                 assert!(close(c.ln().exp(), c));
+            }
+        }
+
+        #[test]
+        fn test_exp2_log() {
+            for &c in all_consts.iter() {
+                // 2^log2(z) = z
+                assert!(close(c.log2().exp2(), c));
             }
         }
 
