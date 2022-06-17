@@ -1,3 +1,14 @@
+# Release 0.4.2 (2022-06-17)
+
+- [The new `ComplexFloat` trait][95] provides a generic abstraction between
+  floating-point `T` and `Complex<T>`.
+- [`Complex::exp` now handles edge cases with NaN and infinite parts][104].
+
+**Contributors**: @cuviper, @JorisDeRidder, @obsgolem, @YakoYakoYokuYoku
+
+[95]: https://github.com/rust-num/num-complex/pull/95
+[104]: https://github.com/rust-num/num-complex/pull/104
+
 # Release 0.4.1 (2022-04-29)
 
 - [`Complex::from_str_radix` now returns an error for radix > 18][90], because
