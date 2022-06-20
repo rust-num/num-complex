@@ -77,7 +77,7 @@ pub use crate::crand::ComplexDistribution;
 ///               y: *mut Complex<f64>, incy: *const c_int);
 /// }
 /// ```
-#[derive(PartialEq, Eq, Copy, Clone, Hash, Debug, Default)]
+#[derive(PartialEq, Eq, Copy, Clone, Hash, Debug, Default, PartialOrd, Ord)]
 #[repr(C)]
 pub struct Complex<T> {
     /// Real portion of the complex number
@@ -2877,5 +2877,21 @@ pub(crate) mod test {
 
         assert_eq!(C.re, 12.3);
         assert_eq!(C.im, -4.5);
+    }
+
+    #[test]
+    fn test_sorting() {
+        let mut list: [Complex<f64>; 6] = [
+            Complex64::new(2.0,1.0),
+            Complex64::new(1.0,7.0),
+            Complex64::new(2.0,14.0),
+            Complex64::new(2.0,0.0),
+            Complex64::new(9.0,0.02),
+            Complex64::new(8.0,43.0),
+        ];
+
+        list.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        println!("{:?}", list);
     }
 }
