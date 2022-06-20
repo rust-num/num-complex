@@ -2890,8 +2890,19 @@ pub(crate) mod test {
             Complex64::new(8.0,43.0),
         ];
 
+        let mut expected: [Complex<f64>; 6] = [
+            Complex64::new(1.0,7.0),
+            Complex64::new(2.0,0.0),
+            Complex64::new(2.0,1.0),
+            Complex64::new(2.0,14.0),
+            Complex64::new(8.0,43.0),
+            Complex64::new(9.0,0.02),
+        ];
+
         list.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
-        println!("{:?}", list);
+        for (i, el) in list.iter().enumerate() {
+            assert_eq!(el, &expected[i]);
+        }
     }
 }
