@@ -30,6 +30,7 @@ fi
 FEATURES=(libm serde)
 check_version 1.34 && FEATURES+=(bytemuck)
 check_version 1.36 && FEATURES+=(rand)
+check_version 1.54 && FEATURES+=(rkyv)
 echo "Testing supported features: ${FEATURES[*]}"
 
 set -x
