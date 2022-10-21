@@ -40,6 +40,7 @@ default-features = false
 [dependencies.bytecheck]
 optional = true
 version = "0.6"
+default-features = false
 
 [dependencies.rand]
 optional = true
@@ -50,6 +51,3 @@ default-features = false
 default = ["std"]
 std = ["num-traits/std"]
 libm = ["num-traits/libm"]
-
-[dev-dependencies]
-rkyv = { version = "0.7", default-features = false, features = ["size_64"] }

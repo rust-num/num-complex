@@ -82,7 +82,7 @@ pub use crate::crand::ComplexDistribution;
 #[cfg_attr(
     feature = "rkyv",
     derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize,),
-    archive(as = "Complex<T::Archived>", bound(archive = "T: rkyv::Archive"))
+    archive(as = "Complex<T::Archived>")
 )]
 #[cfg_attr(feature = "bytecheck", derive(bytecheck::CheckBytes))]
 pub struct Complex<T> {
