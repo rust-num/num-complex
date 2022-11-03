@@ -81,9 +81,9 @@ pub use crate::crand::ComplexDistribution;
 #[repr(C)]
 #[cfg_attr(
     feature = "rkyv",
-    derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize,),
-    archive(as = "Complex<T::Archived>")
+    derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
 )]
+#[cfg_attr(feature = "rkyv", archive(as = "Complex<T::Archived>"))]
 #[cfg_attr(feature = "bytecheck", derive(bytecheck::CheckBytes))]
 pub struct Complex<T> {
     /// Real portion of the complex number

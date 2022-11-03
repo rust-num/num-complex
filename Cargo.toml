@@ -14,7 +14,7 @@ exclude = ["/bors.toml", "/ci/*", "/.github/*"]
 edition = "2018"
 
 [package.metadata.docs.rs]
-features = ["bytemuck", "std", "serde", "rkyv", "bytecheck", "rand"]
+features = ["bytemuck", "std", "serde", "rkyv/size_64", "bytecheck", "rand"]
 
 [dependencies]
 
