@@ -14,7 +14,7 @@ exclude = ["/bors.toml", "/ci/*", "/.github/*"]
 edition = "2018"
 
 [package.metadata.docs.rs]
-features = ["bytemuck", "std", "serde", "rand"]
+features = ["bytemuck", "std", "serde", "rkyv/size_64", "bytecheck", "rand"]
 
 [dependencies]
 
@@ -30,6 +30,16 @@ features = ["i128"]
 [dependencies.serde]
 optional = true
 version = "1.0"
+default-features = false
+
+[dependencies.rkyv]
+optional = true
+version = "0.7"
+default-features = false
+
+[dependencies.bytecheck]
+optional = true
+version = "0.6"
 default-features = false
 
 [dependencies.rand]
