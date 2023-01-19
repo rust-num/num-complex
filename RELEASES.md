@@ -1,3 +1,9 @@
+# Release 0.4.3 (2023-01-19)
+
+- [`Complex` now optionally supports `bytecheck` 0.6 and `rkyv` 0.7][110].
+
+**Contributors**: @cuviper, @zyansheep
+
 # Release 0.4.2 (2022-06-17)
 
 - [The new `ComplexFloat` trait][95] provides a generic abstraction between
