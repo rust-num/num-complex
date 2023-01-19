@@ -33,6 +33,11 @@ check_version 1.36 && FEATURES+=(rand)
 check_version 1.54 && FEATURES+=(rkyv/size_64 bytecheck)
 echo "Testing supported features: ${FEATURES[*]}"
 
+cargo generate-lockfile
+
+# libm 0.2.6 started using {float}::EPSILON
+check_version 1.43 || cargo update -p libm --precise 0.2.5
+
 set -x
 
 # test the default
