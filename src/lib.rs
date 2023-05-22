@@ -373,6 +373,10 @@ impl<T: Float> Complex<T> {
         // = p^c e^(−d θ) (cos(c θ + d ln(ρ)) + i sin(c θ + d ln(ρ)))
         // = from_polar(p^c e^(−d θ), c θ + d ln(ρ))
         let (r, theta) = self.to_polar();
+
+        if r.is_zero() {
+            return Self::new(r, r);
+        }
         Self::from_polar(
             r.powf(exp.re) * (-exp.im * theta).exp(),
             exp.re * theta + exp.im * r.ln(),
@@ -1908,6 +1912,8 @@ pub(crate) mod test {
                 Complex::new(1.65826, -0.33502),
                 1e-5
             ));
+            let z = Complex::new(0.0, 0.0);
+            assert!(close(z.powc(b), z));
         }
 
         #[test]
