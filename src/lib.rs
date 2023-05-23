@@ -361,26 +361,8 @@ impl<T: Float> Complex<T> {
     /// Raises `self` to a complex power.
     #[inline]
     pub fn powc(self, exp: Self) -> Self {
-        // formula: x^y = (a + i b)^(c + i d)
-        // = (ρ e^(i θ))^c (ρ e^(i θ))^(i d)
-        //    where ρ=|x| and θ=arg(x)
-        // = ρ^c e^(−d θ) e^(i c θ) ρ^(i d)
-        // = p^c e^(−d θ) (cos(c θ)
-        //   + i sin(c θ)) (cos(d ln(ρ)) + i sin(d ln(ρ)))
-        // = p^c e^(−d θ) (
-        //   cos(c θ) cos(d ln(ρ)) − sin(c θ) sin(d ln(ρ))
-        //   + i(cos(c θ) sin(d ln(ρ)) + sin(c θ) cos(d ln(ρ))))
-        // = p^c e^(−d θ) (cos(c θ + d ln(ρ)) + i sin(c θ + d ln(ρ)))
-        // = from_polar(p^c e^(−d θ), c θ + d ln(ρ))
-        let (r, theta) = self.to_polar();
-
-        if r.is_zero() {
-            return Self::new(r, r);
-        }
-        Self::from_polar(
-            r.powf(exp.re) * (-exp.im * theta).exp(),
-            exp.re * theta + exp.im * r.ln(),
-        )
+        // formula: x^y = exp(y * ln(x))
+        (exp * self.ln()).exp()
     }
 
     /// Raises a floating point number to the complex power `self`.
@@ -1719,6 +1701,9 @@ pub(crate) mod test {
 
     #[cfg(any(feature = "std", feature = "libm"))]
     pub(crate) mod float {
+
+        use core::f64::INFINITY;
+
         use super::*;
         use num_traits::{Float, Pow};
 
@@ -1914,6 +1899,11 @@ pub(crate) mod test {
             ));
             let z = Complex::new(0.0, 0.0);
             assert!(close(z.powc(b), z));
+            assert!(z.powc(Complex64::new(0., 0.)).is_nan());
+            assert!(z.powc(Complex64::new(0., INFINITY)).is_nan());
+            assert!(z.powc(Complex64::new(10., INFINITY)).is_nan());
+            assert!(z.powc(Complex64::new(INFINITY, INFINITY)).is_nan());
+            assert!(close(z.powc(Complex64::new(INFINITY, 0.)), z));
         }
 
         #[test]
