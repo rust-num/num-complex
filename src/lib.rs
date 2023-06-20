@@ -1906,6 +1906,8 @@ pub(crate) mod test {
             assert!(close(z.powc(Complex64::new(INFINITY, 0.)), z));
             assert!(z.powc(Complex64::new(-1., 0.)).re.is_infinite());
             assert!(z.powc(Complex64::new(-1., 0.)).im.is_nan());
+            assert!(z.powc(Complex64::new(-1., 0.)).re.is_infinite());
+            assert!(z.powc(Complex64::new(-1., 0.)).im.is_nan());
         }
 
         #[test]
