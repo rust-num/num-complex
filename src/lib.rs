@@ -342,6 +342,9 @@ impl<T: Float> Complex<T> {
     /// Raises `self` to a floating point power.
     #[inline]
     pub fn powf(self, exp: T) -> Self {
+        if exp.is_zero() {
+            return Self::one();
+        }
         // formula: x^y = (ρ e^(i θ))^y = ρ^y e^(i θ y)
         // = from_polar(ρ^y, θ y)
         let (r, theta) = self.to_polar();
@@ -361,6 +364,9 @@ impl<T: Float> Complex<T> {
     /// Raises `self` to a complex power.
     #[inline]
     pub fn powc(self, exp: Self) -> Self {
+        if exp.is_zero() {
+            return Self::one();
+        }
         // formula: x^y = exp(y * ln(x))
         (exp * self.ln()).exp()
     }
@@ -1899,13 +1905,17 @@ pub(crate) mod test {
             ));
             let z = Complex::new(0.0, 0.0);
             assert!(close(z.powc(b), z));
-            assert!(z.powc(Complex64::new(0., 0.)).is_nan());
             assert!(z.powc(Complex64::new(0., INFINITY)).is_nan());
             assert!(z.powc(Complex64::new(10., INFINITY)).is_nan());
             assert!(z.powc(Complex64::new(INFINITY, INFINITY)).is_nan());
             assert!(close(z.powc(Complex64::new(INFINITY, 0.)), z));
             assert!(z.powc(Complex64::new(-1., 0.)).re.is_infinite());
             assert!(z.powc(Complex64::new(-1., 0.)).im.is_nan());
+
+            for c in all_consts.iter() {
+                assert_eq!(c.powc(_0_0i), _1_0i);
+            }
+            assert_eq!(_nan_nani.powc(_0_0i), _1_0i);
         }
 
         #[test]
@@ -1915,6 +1925,11 @@ pub(crate) mod test {
             assert!(close_to_tol(c.powf(3.5), expected, 1e-5));
             assert!(close_to_tol(Pow::pow(c, 3.5_f64), expected, 1e-5));
             assert!(close_to_tol(Pow::pow(c, 3.5_f32), expected, 1e-5));
+
+            for c in all_consts.iter() {
+                assert_eq!(c.powf(0.0), _1_0i);
+            }
+            assert_eq!(_nan_nani.powf(0.0), _1_0i);
         }
 
         #[test]
