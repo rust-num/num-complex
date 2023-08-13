@@ -1,8 +1,18 @@
+# Release 0.4.4 (2023-08-13)
+
+- [Fixes NaN value for `powc` of zero][116]
+
+**Contributors**: @cuviper, @domna
+
+[116]: https://github.com/rust-num/num-complex/pull/116
+
 # Release 0.4.3 (2023-01-19)
 
 - [`Complex` now optionally supports `bytecheck` 0.6 and `rkyv` 0.7][110].
 
 **Contributors**: @cuviper, @zyansheep
+
+[110]: https://github.com/rust-num/num-complex/pull/110
 
 # Release 0.4.2 (2022-06-17)
 
