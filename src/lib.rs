@@ -342,6 +342,9 @@ impl<T: Float> Complex<T> {
     /// Raises `self` to a floating point power.
     #[inline]
     pub fn powf(self, exp: T) -> Self {
+        if exp.is_zero() {
+            return Self::one();
+        }
         // formula: x^y = (ρ e^(i θ))^y = ρ^y e^(i θ y)
         // = from_polar(ρ^y, θ y)
         let (r, theta) = self.to_polar();
@@ -361,22 +364,11 @@ impl<T: Float> Complex<T> {
     /// Raises `self` to a complex power.
     #[inline]
     pub fn powc(self, exp: Self) -> Self {
-        // formula: x^y = (a + i b)^(c + i d)
-        // = (ρ e^(i θ))^c (ρ e^(i θ))^(i d)
-        //    where ρ=|x| and θ=arg(x)
-        // = ρ^c e^(−d θ) e^(i c θ) ρ^(i d)
-        // = p^c e^(−d θ) (cos(c θ)
-        //   + i sin(c θ)) (cos(d ln(ρ)) + i sin(d ln(ρ)))
-        // = p^c e^(−d θ) (
-        //   cos(c θ) cos(d ln(ρ)) − sin(c θ) sin(d ln(ρ))
-        //   + i(cos(c θ) sin(d ln(ρ)) + sin(c θ) cos(d ln(ρ))))
-        // = p^c e^(−d θ) (cos(c θ + d ln(ρ)) + i sin(c θ + d ln(ρ)))
-        // = from_polar(p^c e^(−d θ), c θ + d ln(ρ))
-        let (r, theta) = self.to_polar();
-        Self::from_polar(
-            r.powf(exp.re) * (-exp.im * theta).exp(),
-            exp.re * theta + exp.im * r.ln(),
-        )
+        if exp.is_zero() {
+            return Self::one();
+        }
+        // formula: x^y = exp(y * ln(x))
+        (exp * self.ln()).exp()
     }
 
     /// Raises a floating point number to the complex power `self`.
@@ -1715,6 +1707,9 @@ pub(crate) mod test {
 
     #[cfg(any(feature = "std", feature = "libm"))]
     pub(crate) mod float {
+
+        use core::f64::INFINITY;
+
         use super::*;
         use num_traits::{Float, Pow};
 
@@ -1908,6 +1903,19 @@ pub(crate) mod test {
                 Complex::new(1.65826, -0.33502),
                 1e-5
             ));
+            let z = Complex::new(0.0, 0.0);
+            assert!(close(z.powc(b), z));
+            assert!(z.powc(Complex64::new(0., INFINITY)).is_nan());
+            assert!(z.powc(Complex64::new(10., INFINITY)).is_nan());
+            assert!(z.powc(Complex64::new(INFINITY, INFINITY)).is_nan());
+            assert!(close(z.powc(Complex64::new(INFINITY, 0.)), z));
+            assert!(z.powc(Complex64::new(-1., 0.)).re.is_infinite());
+            assert!(z.powc(Complex64::new(-1., 0.)).im.is_nan());
+
+            for c in all_consts.iter() {
+                assert_eq!(c.powc(_0_0i), _1_0i);
+            }
+            assert_eq!(_nan_nani.powc(_0_0i), _1_0i);
         }
 
         #[test]
@@ -1917,6 +1925,11 @@ pub(crate) mod test {
             assert!(close_to_tol(c.powf(3.5), expected, 1e-5));
             assert!(close_to_tol(Pow::pow(c, 3.5_f64), expected, 1e-5));
             assert!(close_to_tol(Pow::pow(c, 3.5_f32), expected, 1e-5));
+
+            for c in all_consts.iter() {
+                assert_eq!(c.powf(0.0), _1_0i);
+            }
+            assert_eq!(_nan_nani.powf(0.0), _1_0i);
         }
 
         #[test]
