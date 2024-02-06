@@ -10,7 +10,7 @@ name = "num-complex"
 repository = "https://github.com/rust-num/num-complex"
 version = "0.4.4"
 readme = "README.md"
-exclude = ["/bors.toml", "/ci/*", "/.github/*"]
+exclude = ["/ci/*", "/.github/*"]
 edition = "2018"
 
 [package.metadata.docs.rs]
