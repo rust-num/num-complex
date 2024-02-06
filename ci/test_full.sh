@@ -40,6 +40,7 @@ check_version 1.43 || cargo update -p libm --precise 0.2.5
 
 # Some crates moved to Rust 1.56 / 2021
 check_version 1.56 || (
+  cargo update -p serde --precise 1.0.185
   cargo update -p quote --precise 1.0.30
   cargo update -p proc-macro2 --precise 1.0.65
   cargo update -p rkyv --precise 0.7.40
