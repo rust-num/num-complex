@@ -1508,7 +1508,7 @@ where
 #[cfg(feature = "serde")]
 impl<'de, T> serde::Deserialize<'de> for Complex<T>
 where
-    T: serde::Deserialize<'de> + Num + Clone,
+    T: serde::Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

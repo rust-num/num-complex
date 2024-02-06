@@ -1,3 +1,11 @@
+# Release 0.4.5 (2024-02-06)
+
+- [Relaxed `T` bounds on `serde::Deserialize` for `Complex<T>`.][119]
+
+**Contributors**: @cuviper, @WalterSmuts
+
+[119]: https://github.com/rust-num/num-complex/pull/119
+
 # Release 0.4.4 (2023-08-13)
 
 - [Fixes NaN value for `powc` of zero][116]
