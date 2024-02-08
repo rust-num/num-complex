@@ -9,9 +9,7 @@ jobs:
     strategy:
       matrix:
         rust: [
-          1.31.0, # 2018!
-          1.36.0, # rand
-          1.54.0, # rkyv
+          1.60.0, # MSRV
           stable,
           beta,
           nightly
