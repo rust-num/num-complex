@@ -2179,6 +2179,8 @@ pub(crate) mod test {
                     -f64::consts::PI / 2.0 <= c.atan().re && c.atan().re <= f64::consts::PI / 2.0
                 );
             }
+            assert!(_0_0i.atan().re.is_sign_positive());
+            assert!((-_0_0i).atan().re.is_sign_negative());
         }
 
         #[test]
@@ -2285,6 +2287,8 @@ pub(crate) mod test {
                     -f64::consts::PI / 2.0 <= c.atanh().im && c.atanh().im <= f64::consts::PI / 2.0
                 );
             }
+            assert!(_0_0i.atanh().re.is_sign_positive());
+            assert!((-_0_0i).atanh().re.is_sign_negative());
         }
 
         #[test]
