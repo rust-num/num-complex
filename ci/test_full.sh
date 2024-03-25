@@ -3,7 +3,7 @@
 set -e
 
 CRATE=num-complex
-MSRV=1.31
+MSRV=1.60
 
 get_rust_version() {
   local array=($(rustc --version));
@@ -27,25 +27,10 @@ if ! check_version $MSRV ; then
   exit 1
 fi
 
-FEATURES=(libm serde)
-check_version 1.34 && FEATURES+=(bytemuck)
-check_version 1.36 && FEATURES+=(rand)
-check_version 1.54 && FEATURES+=(rkyv/size_64 bytecheck)
+FEATURES=(bytecheck bytemuck libm rand rkyv/size_64 serde)
 echo "Testing supported features: ${FEATURES[*]}"
 
 cargo generate-lockfile
-
-# libm 0.2.6 started using {float}::EPSILON
-check_version 1.43 || cargo update -p libm --precise 0.2.5
-
-# Some crates moved to Rust 1.56 / 2021
-check_version 1.56 || (
-  cargo update -p serde --precise 1.0.185
-  cargo update -p quote --precise 1.0.30
-  cargo update -p proc-macro2 --precise 1.0.65
-  cargo update -p rkyv --precise 0.7.40
-  cargo update -p bytecheck --precise 0.6.9
-)
 
 set -x
 

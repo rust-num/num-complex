@@ -213,13 +213,11 @@ impl<T: Float> Complex<T> {
                 if !im.is_finite() {
                     return Self::new(T::zero(), T::zero());
                 }
-            } else {
-                if im == T::zero() || !im.is_finite() {
-                    if im.is_infinite() {
-                        im = T::nan();
-                    }
-                    return Self::new(re, im);
+            } else if im == T::zero() || !im.is_finite() {
+                if im.is_infinite() {
+                    im = T::nan();
                 }
+                return Self::new(re, im);
             }
         } else if re.is_nan() && im == T::zero() {
             return self;
