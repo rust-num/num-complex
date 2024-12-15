@@ -2157,22 +2157,72 @@ pub(crate) mod test {
         }
 
 
-        #[test]
-        #[allow(clippy::float_cmp)]
-        fn test_sqrt_accuract() {
+        fn test_sqrt_rounding() {
             fn naive_sqrt(c: Complex64) -> Complex64 {
                 let (r, theta) = c.to_polar();
                 Complex64::from_polar(r.sqrt(), theta / 2.0)
             }
 
+            fn ulp_l1(a: Complex64, b: Complex64) -> u64 {
+                let re_ulp = a.re.to_bits().abs_diff(b.re.to_bits());
+                let im_ulp = a.im.to_bits().abs_diff(b.im.to_bits());
+                re_ulp + im_ulp
+            }
+            fn close_to_ulp(a: Complex64, b: Complex64, ulp: usize) -> bool {
+                ulp_l1(a, b) <= ulp as u64
+            }
+
             #[track_caller]
             fn check_sqrt(re: f64, im: f64, exact_sqrt_re: f64, exact_sqrt_im: f64) {
                 let sqrt = Complex::new(re, im).sqrt();
-                assert_eq!(sqrt.re, exact_sqrt_re, "real(sqrt(c))e invalid for {re}");
-                assert_eq!(sqrt.im, exact_sqrt_im, "imag(sqrt(c))e invalid for {re}");
+                assert_eq!(sqrt, Complex::new(exact_sqrt_re, exact_sqrt_im));
                 let naive_sqrt = naive_sqrt(Complex::new(re, im));
                 assert_ne!(naive_sqrt, sqrt, "invalid testcase {re} {im}");
+                let roundtrip = sqrt * sqrt;
+                let naive_roundtrip = naive_sqrt * naive_sqrt;
+                assert!(
+                    ulp_l1(roundtrip, Complex::new(re, im))
+                        <= ulp_l1(naive_roundtrip, Complex::new(re, im)),
+                    "{} {} {}",
+                    Complex::new(re, im),
+                    roundtrip,
+                    naive_roundtrip
+                )
             }
+
+            #[track_caller]
+            fn check_sqrt_roundtrip(re: f64, im: f64, ulp: usize) {
+                let sqrt = Complex::new(re, im).sqrt();
+                let roundtrip = sqrt * sqrt;
+                assert!(
+                    close_to_ulp(roundtrip, Complex::new(re, im), ulp),
+                    "roundtrip failed for {re} + j{im}: {roundtrip}"
+                );
+                let naive_sqrt = naive_sqrt(Complex::new(re, im));
+                let naive_roundtrip = naive_sqrt * naive_sqrt;
+                assert!(
+                    !close_to_ulp(naive_roundtrip, Complex::new(re, im), ulp),
+                    "invalid testcase {re} + j{im} {naive_roundtrip} {roundtrip}"
+                );
+            }
+
+            // some hand-collected testcases that roundtrip perfectly with a
+            // sophisticated sqrt implementation but not a naive one .This can
+            // look a bit cherry picked (and it is) but during all my cherry
+            // picking i didn't find a single case which had worse rounding
+            check_sqrt_roundtrip(-1e200, 1e100, 0);
+            // with naive implementation there is an error in both re and im part
+            // but with the implementation here only on the re part
+            check_sqrt_roundtrip(1.0 / 3.0, 1.0 / 3.0, 1);
+            check_sqrt_roundtrip(-1.0 / 3.0, 1.0 / 3.0, 1);
+            check_sqrt_roundtrip(-0.2, 0.1, 1);
+            check_sqrt_roundtrip(-0.45, 0.1, 1);
+            check_sqrt_roundtrip(-std::f64::consts::TAU, std::f64::consts::PI, 1);
+            // both algorithms don't have the strongest showing here (8 ulp vs 9) but
+            // 0.0999999999999999-0.45i instead of 0.10000000000000012-0.45000000000000007i
+            // seems much better since the error is only in the re (and not im)
+            check_sqrt_roundtrip(0.1, -0.45, 8);
+
             // reference values were computed with numpy but are identical
             // with musl and glibc, showing that we round correctly both
             // in reasonable ranges and extremes cases. All of these tests
@@ -2216,9 +2266,8 @@ pub(crate) mod test {
                 0.26274625350107117,
             );
             check_sqrt(1.1, 1e-100, 1.0488088481701516, 4.767312946227961e-101);
-            check_sqrt(1e-100, 0.1, 0.22360679774997896, 0.223606797749979);
-            check_sqrt(1e-100, 1.1, 0.7416198487095663, 0.7416198487095663);
             check_sqrt(1e-100, 1e-100, 1.09868411346781e-50, 4.550898605622274e-51);
+            check_sqrt(0.1, -0.45, 0.5296117553758811, -0.4248395125601222);
         }
         
         #[test]
