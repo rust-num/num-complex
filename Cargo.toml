@@ -8,8 +8,9 @@ categories = [ "algorithms", "data-structures", "science" ]
 license = "MIT/Apache-2.0"
 name = "num-complex"
 repository = "https://github.com/rust-num/num-complex"
-version = "0.1.43"
+version = "0.1.44"
 readme = "README.md"
+build = "build.rs"
 
 [dependencies]
 
@@ -29,3 +30,6 @@ version = ">= 0.7.0, < 0.9.0"
 [features]
 default = ["rustc-serialize"]
 unstable = []
+
+[build-dependencies]
+autocfg = "1.4.0"

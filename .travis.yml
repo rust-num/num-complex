@@ -1,9 +1,14 @@
 language: rust
 rust:
-  - 1.8.0
   - stable
   - beta
   - nightly
+matrix:
+  include:
+    - rust: 1.19.0
+      before_script:
+        - cargo generate-lockfile
+        - cargo update -p num-traits --precise 0.2.15
 sudo: false
 script:
   - cargo build --verbose

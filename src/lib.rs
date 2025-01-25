@@ -12,9 +12,10 @@
 //!
 //! ## Compatibility
 //!
-//! The `num-complex` crate is tested for rustc 1.8 and greater.
+//! The `num-complex` crate is tested for rustc 1.19 and greater.
 
 #![doc(html_root_url = "https://docs.rs/num-complex/0.1")]
+#![cfg_attr(has_derive_rustc_serialize, warn(soft_unstable))] // un-deny
 
 extern crate num_traits as traits;
 
@@ -62,7 +63,7 @@ use traits::{Zero, One, Num, Float};
 /// }
 /// ```
 #[derive(PartialEq, Eq, Copy, Clone, Hash, Debug, Default)]
-#[cfg_attr(feature = "rustc-serialize", derive(RustcEncodable, RustcDecodable))]
+#[cfg_attr(has_derive_rustc_serialize, derive(RustcEncodable, RustcDecodable))]
 #[repr(C)]
 pub struct Complex<T> {
     /// Real portion of the complex number
