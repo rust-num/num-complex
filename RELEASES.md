@@ -1,3 +1,9 @@
+# Release 0.1.44
+
+- [Disable `rustc-serialize` derives for future compilers.][137]
+
+[137]: https://github.com/rust-num/num-complex/pull/137
+
 # Release 0.1.43
 
 - [Fix a usage typo in README.md][20].
