@@ -1,7 +1,7 @@
 // Keeps us from accidentally creating a recursive impl rather than a real one.
 #![deny(unconditional_recursion)]
 
-use core::ops::Neg;
+use core::ops::{Add, Div, Mul, Neg, Rem, Sub};
 
 use num_traits::{Float, FloatConst, Num, NumCast};
 
@@ -25,7 +25,19 @@ mod private {
 ///
 /// This trait is sealed to prevent it from being implemented by anything other
 /// than floating point scalars and [Complex] floats.
-pub trait ComplexFloat: Num + NumCast + Copy + Neg<Output = Self> + private::Seal {
+pub trait ComplexFloat:
+    Num
+    + NumCast
+    + Copy
+    + Neg<Output = Self>
+    + From<<Self as ComplexFloat>::Real>
+    + Add<<Self as ComplexFloat>::Real, Output = Self>
+    + Sub<<Self as ComplexFloat>::Real, Output = Self>
+    + Mul<<Self as ComplexFloat>::Real, Output = Self>
+    + Div<<Self as ComplexFloat>::Real, Output = Self>
+    + Rem<<Self as ComplexFloat>::Real, Output = Self>
+    + private::Seal
+{
     /// The type used to represent the real coefficients of this complex number.
     type Real: Float + FloatConst;
 
