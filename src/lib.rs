@@ -481,13 +481,12 @@ impl<T: Float> Complex<T> {
         // formula: arctan(z) = (ln(1+iz) - ln(1-iz))/(2i)
         let i = Self::i();
         let one = Self::one();
-        let two = one + one;
         if self == i {
             return Self::new(T::zero(), T::infinity());
         } else if self == -i {
             return Self::new(T::zero(), -T::infinity());
         }
-        ((one + i * self).ln() - (one - i * self).ln()) / (two * i)
+        ((one + i * self).ln() - (one - i * self).ln()) / (i + i)
     }
 
     /// Computes the hyperbolic sine of `self`.
@@ -544,8 +543,8 @@ impl<T: Float> Complex<T> {
     pub fn acosh(self) -> Self {
         // formula: arccosh(z) = 2 ln(sqrt((z+1)/2) + sqrt((z-1)/2))
         let one = Self::one();
-        let two = one + one;
-        two * (((self + one) / two).sqrt() + ((self - one) / two).sqrt()).ln()
+        let two = T::one() + T::one();
+        (((self + one) / two).sqrt() + ((self - one) / two).sqrt()).ln() * two
     }
 
     /// Computes the principal value of inverse hyperbolic tangent of `self`.
@@ -560,7 +559,7 @@ impl<T: Float> Complex<T> {
     pub fn atanh(self) -> Self {
         // formula: arctanh(z) = (ln(1+z) - ln(1-z))/2
         let one = Self::one();
-        let two = one + one;
+        let two = T::one() + T::one();
         if self == one {
             return Self::new(T::infinity(), T::zero());
         } else if self == -one {
@@ -2274,7 +2273,7 @@ pub(crate) mod test {
             assert!(close(_0_1i.tanh(), _0_1i.scale(1.0.tan())));
             for &c in all_consts.iter() {
                 // tanh(conj(z)) = conj(tanh(z))
-                assert!(close(c.conj().tanh(), c.conj().tanh()));
+                assert!(close(c.conj().tanh(), c.tanh().conj()));
                 // tanh(-z) = -tanh(z)
                 assert!(close(c.scale(-1.0).tanh(), c.tanh().scale(-1.0)));
             }
@@ -2291,7 +2290,7 @@ pub(crate) mod test {
             ));
             for &c in all_consts.iter() {
                 // asinh(conj(z)) = conj(asinh(z))
-                assert!(close(c.conj().asinh(), c.conj().asinh()));
+                assert!(close(c.conj().asinh(), c.asinh().conj()));
                 // asinh(-z) = -asinh(z)
                 assert!(close(c.scale(-1.0).asinh(), c.asinh().scale(-1.0)));
                 // for this branch, -pi/2 <= asinh(z).im <= pi/2
@@ -2305,13 +2304,18 @@ pub(crate) mod test {
         fn test_acosh() {
             assert!(close(_0_0i.acosh(), _0_1i.scale(f64::consts::PI / 2.0)));
             assert!(close(_1_0i.acosh(), _0_0i));
+            // zero sign on imaginary part is used!
+            assert!(close(
+                Complex::new(-1., 0.).acosh(),
+                _0_1i.scale(f64::consts::PI)
+            ));
             assert!(close(
                 _1_0i.scale(-1.0).acosh(),
-                _0_1i.scale(f64::consts::PI)
+                _0_1i.scale(-f64::consts::PI)
             ));
             for &c in all_consts.iter() {
                 // acosh(conj(z)) = conj(acosh(z))
-                assert!(close(c.conj().acosh(), c.conj().acosh()));
+                assert!(close(c.conj().acosh(), c.acosh().conj()));
                 // for this branch, -pi <= acosh(z).im <= pi and 0 <= acosh(z).re
                 assert!(
                     -f64::consts::PI <= c.acosh().im
@@ -2328,7 +2332,7 @@ pub(crate) mod test {
             assert!(close(_1_0i.atanh(), Complex::new(f64::infinity(), 0.0)));
             for &c in all_consts.iter() {
                 // atanh(conj(z)) = conj(atanh(z))
-                assert!(close(c.conj().atanh(), c.conj().atanh()));
+                assert!(close(c.conj().atanh(), c.atanh().conj()));
                 // atanh(-z) = -atanh(z)
                 assert!(close(c.scale(-1.0).atanh(), c.atanh().scale(-1.0)));
                 // for this branch, -pi/2 <= atanh(z).im <= pi/2
