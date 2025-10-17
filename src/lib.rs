@@ -842,6 +842,12 @@ impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> Complex<T> {
         Self::new(re, im)
     }
 }
+impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> Complex<T> {
+    #[inline]
+    fn div_add_ref(self, other: &Complex<T>, add: &Complex<T>) -> Self {
+        self.clone().div_add(other.clone(), add.clone())
+    }
+}
 
 forward_all_binop!(impl Rem, rem);
 
