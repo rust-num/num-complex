@@ -1680,6 +1680,8 @@ pub(crate) mod test {
 
     use num_traits::{Num, One, Zero};
 
+    use super::DivAdd;
+
     pub const _0_0i: Complex64 = Complex::new(0.0, 0.0);
     pub const _1_0i: Complex64 = Complex::new(1.0, 0.0);
     pub const _1_1i: Complex64 = Complex::new(1.0, 1.0);
@@ -1849,7 +1851,7 @@ pub(crate) mod test {
             close_to_tol(a, b, 1e-10)
         }
 
-        fn close_to_tol(a: Complex64, b: Complex64, tol: f64) -> bool {
+        pub(crate) fn close_to_tol(a: Complex64, b: Complex64, tol: f64) -> bool {
             // returns true if a and b are reasonably close
             let close = (a == b) || (a - b).norm() < tol;
             if !close {
@@ -2536,6 +2538,9 @@ pub(crate) mod test {
     }
 
     mod complex_arithmetic {
+        use crate::test::float::close_to_tol;
+
+        use super::DivAdd;
         use super::{_05_05i, _0_0i, _0_1i, _1_0i, _1_1i, _4_2i, _neg1_1i, all_consts};
         use num_traits::{MulAdd, MulAddAssign, Zero};
 
@@ -2632,6 +2637,37 @@ pub(crate) mod test {
                         let mut x = a;
                         x.mul_add_assign(b, c);
                         assert_eq!(x, abc);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn test_div_add() {
+            use super::Complex;
+            const _0_0i: Complex<i32> = Complex { re: 0, im: 0 };
+            const _1_0i: Complex<i32> = Complex { re: 1, im: 0 };
+            const _2_0i: Complex<i32> = Complex { re: 2, im: 0 };
+            const _1_1i: Complex<i32> = Complex { re: 1, im: 1 };
+            const _0_1i: Complex<i32> = Complex { re: 0, im: 1 };
+            const _neg1_1i: Complex<i32> = Complex { re: -1, im: 1 };
+            const all_consts: [Complex<i32>; 6] = [_0_0i, _1_0i, _2_0i, _1_1i, _0_1i, _neg1_1i];
+            const non_zero_consts: [Complex<i32>; 5] = [_1_0i, _2_0i, _1_1i, _0_1i, _neg1_1i];
+
+            assert_eq!(_1_0i.div_add(_1_0i, _0_0i), _1_0i);
+            assert_eq!(_0_1i.div_add(_0_1i, _0_1i), _1_1i);
+            assert_eq!(_1_0i.div_add(_1_0i, _1_0i), _2_0i);
+
+            // a/b+c ~= 6.34 * e^(2i)
+            const _a: Complex<f64> = Complex { re: 1.23, im: -3.4 };
+            const _b: Complex<f64> = Complex { re: -6.78, im: 9.0 };
+            const _c: Complex<f64> = Complex { re: -2.34, im: 5.6 };
+            assert!(close_to_tol(_a.div_add(_b, _c), _a / _b + _c, 1e-10));
+
+            for &a in &all_consts {
+                for &b in &non_zero_consts {
+                    for &c in &all_consts {
+                        assert_eq!(a.div_add(b, c), a / b + c);
                     }
                 }
             }
