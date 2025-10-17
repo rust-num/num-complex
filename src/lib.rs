@@ -849,9 +849,7 @@ impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> DivAdd<Complex<T>> f
         Self::new(re, im)
     }
 }
-impl<'a, 'b, T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> DivAdd<&'b Complex<T>>
-    for &'a Complex<T>
-{
+impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> DivAdd<&Complex<T>> for &Complex<T> {
     type Output = Complex<T>;
 
     #[inline]
