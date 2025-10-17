@@ -824,13 +824,20 @@ impl<T: Clone + Num> Div<Complex<T>> for Complex<T> {
     }
 }
 
+trait DivAdd<Rhs = Self, Addend = Self> {
+    type Output;
+    fn div_add(self, rhs: Rhs, addend: Addend) -> Self::Output;
+}
+
 // (a + i b) / (c + i d) + (e + i f) == [(a + i b) * (c - i d)] / (c*c + d*d) + (e + i f)
 //   == [(a + i b) * (c - i d) + (c*c + d*d) * (e + i f)] / n   for  n=(c*c + d*d)
 //   == [(a*c + b*d + n*e) + i (-a*d + b*c + n*f)] / n
 //   == [{(a*c + b*d) / n + e} + i {(-a*d + b*c) / n + f}]
-impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> Complex<T> {
+impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> DivAdd<Complex<T>> for Complex<T> {
+    type Output = Self;
+
     #[inline]
-    fn div_add(self, other: Complex<T>, add: Complex<T>) -> Self {
+    fn div_add(self, other: Complex<T>, add: Complex<T>) -> Self::Output {
         let n = other.norm_sqr();
         let (a, b) = (self.re, self.im);
         let (c, d) = (other.re, other.im);
@@ -842,9 +849,13 @@ impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> Complex<T> {
         Self::new(re, im)
     }
 }
-impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> Complex<T> {
+impl<'a, 'b, T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> DivAdd<&'b Complex<T>>
+    for &'a Complex<T>
+{
+    type Output = Complex<T>;
+
     #[inline]
-    fn div_add_ref(self, other: &Complex<T>, add: &Complex<T>) -> Self {
+    fn div_add(self, other: &Complex<T>, add: &Complex<T>) -> Self::Output {
         self.clone().div_add(other.clone(), add.clone())
     }
 }
