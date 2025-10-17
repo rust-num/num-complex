@@ -824,6 +824,25 @@ impl<T: Clone + Num> Div<Complex<T>> for Complex<T> {
     }
 }
 
+// (a + i b) / (c + i d) + (e + i f) == [(a + i b) * (c - i d)] / (c*c + d*d) + (e + i f)
+//   == [(a + i b) * (c - i d) + (c*c + d*d) * (e + i f)] / n   for  n=(c*c + d*d)
+//   == [(a*c + b*d + n*e) + i (-a*d + b*c + n*f)] / n
+//   == [{(a*c + b*d) / n + e} + i {(-a*d + b*c) / n + f}]
+impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> Complex<T> {
+    #[inline]
+    fn div_add(self, other: Complex<T>, add: Complex<T>) -> Self {
+        let n = other.norm_sqr();
+        let (a, b) = (self.re, self.im);
+        let (c, d) = (other.re, other.im);
+        let (e, f) = (add.re, add.im);
+
+        let re = a.clone().mul_add(c.clone(), b.clone() * d.clone()) / n.clone() + e;
+        let im = a.mul_add(-d, b * c) / n + f;
+
+        Self::new(re, im)
+    }
+}
+
 forward_all_binop!(impl Rem, rem);
 
 impl<T: Clone + Num> Complex<T> {
