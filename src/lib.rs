@@ -788,7 +788,10 @@ impl<T: Clone + Num> Mul<Complex<T>> for Complex<T> {
 }
 
 // (a + i b) * (c + i d) + (e + i f) == (a*c - (b*d - e)) + i (a*d + (b*c + f))
-impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> MulAdd<Complex<T>> for Complex<T> {
+impl<T> MulAdd<Complex<T>> for Complex<T>
+where
+    T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>,
+{
     type Output = Complex<T>;
 
     #[inline]
