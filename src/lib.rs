@@ -793,9 +793,12 @@ impl<T: Clone + Num + MulAdd<Output = T>> MulAdd<Complex<T>> for Complex<T> {
 
     #[inline]
     fn mul_add(self, other: Complex<T>, add: Complex<T>) -> Complex<T> {
-        let re = self.re.clone().mul_add(other.re.clone(), add.re)
-            - (self.im.clone() * other.im.clone()); // FIXME: use mulsub when available in rust
-        let im = self.re.mul_add(other.im, self.im.mul_add(other.re, add.im));
+        let (a, b) = (self.re, self.im);
+        let (c, d) = (other.re, other.im);
+        let (e, f) = (add.re, add.im);
+
+        let re = a.clone().mul_add(c.clone(), e) - (b.clone() * d.clone()); // FIXME: use mulsub when available in rust
+        let im = a.mul_add(d, b.mul_add(c, f));
         Complex::new(re, im)
     }
 }
