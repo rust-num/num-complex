@@ -134,6 +134,14 @@ impl<T> Complex<T> {
     }
 }
 
+impl<T: Zero> Complex<T> {
+    /// Create a new `Complex` from a real number.
+    #[inline]
+    pub fn from_real(re: T) -> Self {
+        Self::new(re, T::zero())
+    }
+}
+
 impl<T: Clone + Num> Complex<T> {
     /// Returns the imaginary unit.
     ///
