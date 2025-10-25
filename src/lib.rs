@@ -824,7 +824,7 @@ impl<T: Clone + Num> Div<Complex<T>> for Complex<T> {
     }
 }
 
-trait DivAdd<Rhs = Self, Addend = Self> {
+pub trait DivAdd<Rhs = Self, Addend = Self> {
     type Output;
     fn div_add(self, rhs: Rhs, addend: Addend) -> Self::Output;
 }
