@@ -839,7 +839,7 @@ impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> DivAdd<Complex<T>> f
         let n = other.norm_sqr();
         let (a, b) = (self.re, self.im);
         let (c, d) = (other.re, other.im);
-        
+
         let re = a.clone().mul_add(c.clone(), b.clone() * d.clone());
         let im = a.mul_add(-d, b * c);
 
@@ -2665,6 +2665,7 @@ pub(crate) mod test {
                 for &b in &non_zero_consts {
                     for &c in &all_consts {
                         assert_eq!(a.div_add(b, c), a / b + c);
+                        assert_eq!((&a).div_add(&b, &c), a / b + c);
                     }
                 }
             }
