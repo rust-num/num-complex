@@ -1679,8 +1679,6 @@ pub(crate) mod test {
 
     use num_traits::{Num, One, Zero};
 
-    use super::DivAdd;
-
     pub const _0_0i: Complex64 = Complex::new(0.0, 0.0);
     pub const _1_0i: Complex64 = Complex::new(1.0, 0.0);
     pub const _1_1i: Complex64 = Complex::new(1.0, 1.0);
@@ -2539,7 +2537,6 @@ pub(crate) mod test {
     mod complex_arithmetic {
         use crate::test::float::close_to_tol;
 
-        use super::DivAdd;
         use super::{_05_05i, _0_0i, _0_1i, _1_0i, _1_1i, _4_2i, _neg1_1i, all_consts};
         use num_traits::{MulAdd, MulAddAssign, Zero};
 
@@ -2643,7 +2640,8 @@ pub(crate) mod test {
 
         #[test]
         fn test_div_add() {
-            use super::Complex;
+            use crate::{Complex, DivAdd};
+
             const _0_0i: Complex<i32> = Complex { re: 0, im: 0 };
             const _1_0i: Complex<i32> = Complex { re: 1, im: 0 };
             const _2_0i: Complex<i32> = Complex { re: 2, im: 0 };
