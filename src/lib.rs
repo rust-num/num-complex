@@ -831,8 +831,9 @@ pub trait DivAdd<Rhs = Self, Addend = Self> {
 
 // (a + i b) / (c + i d) + (e + i f) == [(a + i b) * (c - i d)] / (c*c + d*d) + (e + i f)
 //   == {(a*c + b*d) + i (-a*d + b*c)} / n + (e + i f)   for  n=(c*c + d*d)
-impl<T: Clone + Num + Mul<Output = T> + MulAdd<Output = T> + Neg<Output = T>> DivAdd<Complex<T>>
-    for Complex<T>
+impl<T> DivAdd<Complex<T>> for Complex<T>
+where
+    T: Clone + Num + Mul<Output = T> + MulAdd<Output = T> + Neg<Output = T>,
 {
     type Output = Self;
 
@@ -848,7 +849,10 @@ impl<T: Clone + Num + Mul<Output = T> + MulAdd<Output = T> + Neg<Output = T>> Di
         Self::new(re, im) / n + add
     }
 }
-impl<T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> DivAdd<&Complex<T>> for &Complex<T> {
+impl<T> DivAdd<&Complex<T>> for &Complex<T>
+where
+    T: Clone + Num + Mul<Output = T> + MulAdd<Output = T> + Neg<Output = T>,
+{
     type Output = Complex<T>;
 
     #[inline]
