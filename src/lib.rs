@@ -1681,6 +1681,25 @@ pub(crate) mod test {
     pub const _nan_nani: Complex64 = Complex::new(f64::NAN, f64::NAN);
 
     #[test]
+    fn test_from_real() {
+        for re in [
+            -3.123,
+            -1.0,
+            0.0,
+            1.0,
+            5.67,
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+        ] {
+            assert_eq!(Complex::new(re, 0.0), Complex::from_real(re));
+        }
+        {
+            let x = Complex::from_real(f64::NAN);
+            assert!(x.re.is_nan() && x.im.is_zero());
+        }
+    }
+
+    #[test]
     fn test_consts() {
         // check our constants are what Complex::new creates
         fn test(c: Complex64, r: f64, i: f64) {
