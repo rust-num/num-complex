@@ -2716,6 +2716,14 @@ pub(crate) mod test {
         assert_eq!(format!("{}", c), "-10-10000i");
         #[cfg(feature = "std")]
         assert_eq!(format!("{:16}", c), "      -10-10000i");
+
+        for re in [-0.0, 0.0] {
+            for im in [-0.0, 0.0] {
+                let d = Complex::new(re, im);
+                assert_eq!(format!("{}", d), "0+0i");
+                assert_eq!(format!("{:+}", d), "+0+0i");
+            }
+        }
     }
 
     #[test]
