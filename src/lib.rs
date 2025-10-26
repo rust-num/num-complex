@@ -37,6 +37,8 @@ use num_traits::float::FloatCore;
 use num_traits::float::{Float, FloatConst};
 
 mod cast;
+mod cis;
+pub use cis::Cis;
 mod pow;
 
 #[cfg(any(feature = "std", feature = "libm"))]
