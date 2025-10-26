@@ -1238,12 +1238,16 @@ impl<T: Clone + Num> One for Complex<T> {
 
 macro_rules! write_complex {
     ($f:ident, $t:expr, $prefix:expr, $re:expr, $im:expr, $T:ident) => {{
-        let abs_re = if $re < Zero::zero() {
+        let abs_re = if $re.is_zero() {
+            $T::zero()
+        } else if $re < Zero::zero() {
             $T::zero() - $re.clone()
         } else {
             $re.clone()
         };
-        let abs_im = if $im < Zero::zero() {
+        let abs_im = if $im.is_zero() {
+            $T::zero()
+        } else if $im < Zero::zero() {
             $T::zero() - $im.clone()
         } else {
             $im.clone()
