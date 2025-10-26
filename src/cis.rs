@@ -44,6 +44,9 @@ mod imp {
 
         #[test]
         fn cis_real() {
+            // Compare a hard-coded example to a reference result via WolframAlpha:
+            // https://www.wolframalpha.com/input?i=cis%281.2345%29
+
             let theta = 1.2345;
             let expected = Complex::new(0.3299931576785677, 0.9439833239445111);
             assert!((expected - theta.cis()).norm_sqr() < 1e-10);
@@ -51,6 +54,9 @@ mod imp {
 
         #[test]
         fn cis_complex() {
+            // Compare a hard-coded example to a reference result via WolframAlpha:
+            // https://www.wolframalpha.com/input?i=cis%28-6.789%2Bi1.2345%29
+
             let z = Complex::new(-6.7890, 1.2345);
             let expected = Complex::new(0.254543682056692, -0.1409858152159941);
             assert!((expected - z.cis()).norm_sqr() < 1e-10);
