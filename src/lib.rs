@@ -2670,7 +2670,7 @@ pub(crate) mod test {
 
         #[test]
         #[cfg(any(feature = "std", feature = "libm"))]
-        fn test_mul_add_float() {
+        fn test_mul_add_float_complex_complex() {
             assert_eq!(_05_05i.mul_add(_05_05i, _0_0i), _05_05i * _05_05i + _0_0i);
             assert_eq!(_05_05i * _05_05i + _0_0i, _05_05i.mul_add(_05_05i, _0_0i));
             assert_eq!(_0_1i.mul_add(_0_1i, _0_1i), _neg1_1i);
@@ -2684,6 +2684,81 @@ pub(crate) mod test {
             for &a in &all_consts {
                 for &b in &all_consts {
                     for &c in &all_consts {
+                        let abc = a * b + c;
+                        assert_eq!(a.mul_add(b, c), abc);
+                        let mut x = a;
+                        x.mul_add_assign(b, c);
+                        assert_eq!(x, abc);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        #[cfg(any(feature = "std", feature = "libm"))]
+        fn test_mul_add_float_real_complex() {
+            assert_eq!(_05_05i.mul_add(0.5, _0_0i), _05_05i * 0.5 + _0_0i);
+            assert_eq!(_05_05i * 0.5 + _0_0i, _05_05i.mul_add(0.5, _0_0i));
+            assert_eq!(_1_0i.mul_add(1.0, _1_0i), _1_0i * 1.0 + _1_0i);
+            assert_eq!(_1_0i * 1.0 + _1_0i, _1_0i.mul_add(1.0, _1_0i));
+
+            let mut x = _1_0i;
+            x.mul_add_assign(1.0, _1_0i);
+            assert_eq!(x, _1_0i * 1.0 + _1_0i);
+
+            for &a in &all_consts {
+                for &b in &[-1.0, -0.5, 0.0, 0.5, 1.0] {
+                    for &c in &all_consts {
+                        let abc = a * b + c;
+                        assert_eq!(a.mul_add(b, c), abc);
+                        let mut x = a;
+                        x.mul_add_assign(b, c);
+                        assert_eq!(x, abc);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        #[cfg(any(feature = "std", feature = "libm"))]
+        fn test_mul_add_float_complex_real() {
+            assert_eq!(_05_05i.mul_add(_05_05i, 0.0), _05_05i * _05_05i + 0.0);
+            assert_eq!(_05_05i * _05_05i + 0.0, _05_05i.mul_add(_05_05i, 0.0));
+            assert_eq!(_1_0i.mul_add(_1_0i, 1.0), _1_0i * _1_0i + 1.0);
+            assert_eq!(_1_0i * _1_0i + 1.0, _1_0i.mul_add(_1_0i, 1.0));
+
+            let mut x = _1_0i;
+            x.mul_add_assign(_1_0i, 1.0);
+            assert_eq!(x, _1_0i * _1_0i + 1.0);
+
+            for &a in &all_consts {
+                for &b in &all_consts {
+                    for &c in &[-1.0, -0.5, 0.0, 0.5, 1.0] {
+                        let abc = a * b + c;
+                        assert_eq!(a.mul_add(b, c), abc);
+                        let mut x = a;
+                        x.mul_add_assign(b, c);
+                        assert_eq!(x, abc);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        #[cfg(any(feature = "std", feature = "libm"))]
+        fn test_mul_add_float_real_real() {
+            assert_eq!(_05_05i.mul_add(0.5, 0.0), _05_05i * 0.5 + 0.0);
+            assert_eq!(_05_05i * 0.5 + 0.0, _05_05i.mul_add(0.5, 0.0));
+            assert_eq!(_1_0i.mul_add(1.0, 1.0), _1_0i * 1.0 + 1.0);
+            assert_eq!(_1_0i * 1.0 + 1.0, _1_0i.mul_add(1.0, 1.0));
+
+            let mut x = _1_0i;
+            x.mul_add_assign(1.0, 1.0);
+            assert_eq!(x, _1_0i * 1.0 + 1.0);
+
+            for &a in &all_consts {
+                for &b in &[-1.0, -0.5, 0.0, 0.5, 1.0] {
+                    for &c in &[-1.0, -0.5, 0.0, 0.5, 1.0] {
                         let abc = a * b + c;
                         assert_eq!(a.mul_add(b, c), abc);
                         let mut x = a;
