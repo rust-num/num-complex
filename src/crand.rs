@@ -42,31 +42,29 @@ where
 }
 
 #[cfg(test)]
-fn test_rng() -> impl RngCore {
+fn test_rng() -> impl Rng {
     /// Simple `Rng` for testing without additional dependencies
     struct XorShiftStar {
         a: u64,
     }
 
-    impl RngCore for XorShiftStar {
-        fn next_u32(&mut self) -> u32 {
-            self.next_u64() as u32
+    impl rand::TryRng for XorShiftStar {
+        type Error = core::convert::Infallible;
+
+        fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
+            Ok(self.next_u64() as u32)
         }
 
-        fn next_u64(&mut self) -> u64 {
+        fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
             // https://en.wikipedia.org/wiki/Xorshift#xorshift*
             self.a ^= self.a >> 12;
             self.a ^= self.a << 25;
             self.a ^= self.a >> 27;
-            self.a.wrapping_mul(0x2545_F491_4F6C_DD1D)
+            Ok(self.a.wrapping_mul(0x2545_F491_4F6C_DD1D))
         }
 
-        fn fill_bytes(&mut self, dest: &mut [u8]) {
-            for chunk in dest.chunks_mut(8) {
-                let bytes = self.next_u64().to_le_bytes();
-                let slice = &bytes[..chunk.len()];
-                chunk.copy_from_slice(slice)
-            }
+        fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Self::Error> {
+            rand::rand_core::utils::fill_bytes_via_next_word(dest, || self.try_next_u64())
         }
     }
 
