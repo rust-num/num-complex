@@ -2715,8 +2715,8 @@ pub(crate) mod test {
         assert_eq!(format!("{}", c), "-10-10000i");
         #[cfg(feature = "std")]
         assert_eq!(format!("{:16}", c), "      -10-10000i");
-		
-		assert_eq!(format!("{:}", Complex::new(2.0f64, -1.0e-330f64)), "2-0i");
+
+        assert_eq!(format!("{:}", Complex::new(2.0f64, -1.0e-330f64)), "2-0i");
     }
 
     #[test]
