@@ -1238,12 +1238,12 @@ impl<T: Clone + Num> One for Complex<T> {
 
 macro_rules! write_complex {
     ($f:ident, $t:expr, $prefix:expr, $re:expr, $im:expr, $T:ident) => {{
-        let abs_re = if $re < Zero::zero() {
+        let abs_re = if $re.is_negative() {
             $T::zero() - $re.clone()
         } else {
             $re.clone()
         };
-        let abs_im = if $im < Zero::zero() {
+        let abs_im = if $im.is_negative() {
             $T::zero() - $im.clone()
         } else {
             $im.clone()
@@ -1252,16 +1252,16 @@ macro_rules! write_complex {
         return if let Some(prec) = $f.precision() {
             fmt_re_im(
                 $f,
-                $re < $T::zero(),
-                $im < $T::zero(),
+                $re.is_negative(),
+                $im.is_negative(),
                 format_args!(concat!("{:.1$", $t, "}"), abs_re, prec),
                 format_args!(concat!("{:.1$", $t, "}"), abs_im, prec),
             )
         } else {
             fmt_re_im(
                 $f,
-                $re < $T::zero(),
-                $im < $T::zero(),
+                $re.is_negative(),
+                $im.is_negative(),
                 format_args!(concat!("{:", $t, "}"), abs_re),
                 format_args!(concat!("{:", $t, "}"), abs_im),
             )
@@ -1329,7 +1329,7 @@ macro_rules! write_complex {
 // string conversions
 impl<T> fmt::Display for Complex<T>
 where
-    T: fmt::Display + Num + PartialOrd + Clone,
+    T: fmt::Display + Num + Signed + Clone,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "", "", self.re, self.im, T)
@@ -1338,7 +1338,7 @@ where
 
 impl<T> fmt::LowerExp for Complex<T>
 where
-    T: fmt::LowerExp + Num + PartialOrd + Clone,
+    T: fmt::LowerExp + Num + Signed + Clone,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "e", "", self.re, self.im, T)
@@ -1347,7 +1347,7 @@ where
 
 impl<T> fmt::UpperExp for Complex<T>
 where
-    T: fmt::UpperExp + Num + PartialOrd + Clone,
+    T: fmt::UpperExp + Num + Signed + Clone,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "E", "", self.re, self.im, T)
@@ -1356,7 +1356,7 @@ where
 
 impl<T> fmt::LowerHex for Complex<T>
 where
-    T: fmt::LowerHex + Num + PartialOrd + Clone,
+    T: fmt::LowerHex + Num + Signed + Clone,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "x", "0x", self.re, self.im, T)
@@ -1365,7 +1365,7 @@ where
 
 impl<T> fmt::UpperHex for Complex<T>
 where
-    T: fmt::UpperHex + Num + PartialOrd + Clone,
+    T: fmt::UpperHex + Num + Signed + Clone,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "X", "0x", self.re, self.im, T)
@@ -1374,7 +1374,7 @@ where
 
 impl<T> fmt::Octal for Complex<T>
 where
-    T: fmt::Octal + Num + PartialOrd + Clone,
+    T: fmt::Octal + Num + Signed + Clone,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "o", "0o", self.re, self.im, T)
@@ -1383,7 +1383,7 @@ where
 
 impl<T> fmt::Binary for Complex<T>
 where
-    T: fmt::Binary + Num + PartialOrd + Clone,
+    T: fmt::Binary + Num + Signed + Clone,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_complex!(f, "b", "0b", self.re, self.im, T)
@@ -2715,6 +2715,8 @@ pub(crate) mod test {
         assert_eq!(format!("{}", c), "-10-10000i");
         #[cfg(feature = "std")]
         assert_eq!(format!("{:16}", c), "      -10-10000i");
+		
+		assert_eq!(format!("{:}", Complex::new(2.0f64, -1.0e-330f64)), "2-0i");
     }
 
     #[test]
