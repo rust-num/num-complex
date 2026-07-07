@@ -3,7 +3,7 @@
 [![crate](https://img.shields.io/crates/v/num-complex.svg)](https://crates.io/crates/num-complex)
 [![documentation](https://docs.rs/num-complex/badge.svg)](https://docs.rs/num-complex)
 [![minimum rustc 1.60](https://img.shields.io/badge/rustc-1.60+-red.svg)](https://rust-lang.github.io/rfcs/2495-min-rust-version.html)
-[![build status](https://github.com/rust-num/num-complex/workflows/master/badge.svg)](https://github.com/rust-num/num-complex/actions)
+[![build status](https://github.com/rust-num/num-complex/actions/workflows/main.yaml/badge.svg)](https://github.com/rust-num/num-complex/actions/workflows/main.yaml)
 
 `Complex` numbers for Rust.
 
