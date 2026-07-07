@@ -808,6 +808,67 @@ impl<'a, 'b, T: Clone + Num + MulAdd<Output = T>> MulAdd<&'b Complex<T>> for &'a
     }
 }
 
+// (a + i b) * (c + i 0) + (e + i f) == (a*c + e) + i (b*c + f)
+impl<T: Clone + Num + MulAdd<Output = T>> MulAdd<T, Complex<T>> for Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn mul_add(self, other: T, add: Complex<T>) -> Complex<T> {
+        let re = self.re.mul_add(other.clone(), add.re);
+        let im = self.im.mul_add(other, add.im);
+        Complex::new(re, im)
+    }
+}
+impl<'a, 'b, T: Clone + Num + MulAdd<Output = T>> MulAdd<&'b T, &'b Complex<T>> for &'a Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn mul_add(self, other: &T, add: &Complex<T>) -> Complex<T> {
+        self.clone().mul_add(other.clone(), add.clone())
+    }
+}
+
+// (a + i b) * (c + i d) + (e + i 0) == ((a*c + e) - b*d) + i (a*d + b*c)
+impl<T: Clone + Num + MulAdd<Output = T>> MulAdd<Complex<T>, T> for Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn mul_add(self, other: Complex<T>, add: T) -> Complex<T> {
+        let re = self.re.clone().mul_add(other.re.clone(), add)
+            - (self.im.clone() * other.im.clone()); // FIXME: use mulsub when available in rust
+        let im = self.re.mul_add(other.im, self.im * other.re);
+        Complex::new(re, im)
+    }
+}
+impl<'a, 'b, T: Clone + Num + MulAdd<Output = T>> MulAdd<&'b Complex<T>, &'b T> for &'a Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn mul_add(self, other: &Complex<T>, add: &T) -> Complex<T> {
+        self.clone().mul_add(other.clone(), add.clone())
+    }
+}
+
+// (a + i b) * (c + i 0) + (e + i 0) == (a*c + e) + i (b*c)
+impl<T: Clone + Num + MulAdd<Output = T>> MulAdd<T, T> for Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn mul_add(self, other: T, add: T) -> Complex<T> {
+        let re = self.re.mul_add(other.clone(), add);
+        let im = self.im * other;
+        Complex::new(re, im)
+    }
+}
+impl<'a, 'b, T: Clone + Num + MulAdd<Output = T>> MulAdd<&'b T, &'b T> for &'a Complex<T> {
+    type Output = Complex<T>;
+
+    #[inline]
+    fn mul_add(self, other: &T, add: &T) -> Complex<T> {
+        self.clone().mul_add(other.clone(), add.clone())
+    }
+}
+
 forward_all_binop!(impl Div, div);
 
 // (a + i b) / (c + i d) == [(a + i b) * (c - i d)] / (c*c + d*d)
@@ -898,6 +959,59 @@ mod opassign {
         for Complex<T>
     {
         fn mul_add_assign(&mut self, other: &Complex<T>, add: &Complex<T>) {
+            self.mul_add_assign(other.clone(), add.clone());
+        }
+    }
+
+    // (a + i b) * (c + i 0) + (e + i f) == (a*c + e) + i (b*c + f)
+    impl<T: Clone + NumAssign + MulAddAssign> MulAddAssign<T, Complex<T>> for Complex<T> {
+        fn mul_add_assign(&mut self, other: T, add: Complex<T>) {
+            self.re.mul_add_assign(other.clone(), add.re); // (a*c + e)
+            self.im.mul_add_assign(other, add.im); // (b*c + f)
+        }
+    }
+
+    impl<'a, 'b, T: Clone + NumAssign + MulAddAssign> MulAddAssign<&'a T, &'b Complex<T>>
+        for Complex<T>
+    {
+        fn mul_add_assign(&mut self, other: &T, add: &Complex<T>) {
+            self.mul_add_assign(other.clone(), add.clone());
+        }
+    }
+
+    // (a + i b) * (c + i d) + (e + i 0) == ((a*c + e) - b*d) + i (a*d + b*c)
+    impl<T: Clone + NumAssign + MulAddAssign> MulAddAssign<Complex<T>, T> for Complex<T> {
+        fn mul_add_assign(&mut self, other: Complex<T>, add: T) {
+            let a = self.re.clone();
+
+            self.re.mul_add_assign(other.re.clone(), add); // (a*c + e)
+            self.re -= self.im.clone() * other.im.clone(); // ((a*c + e) - b*d)
+
+            self.im.mul_add_assign(other.re, a * other.im); // (b*c + a*d)
+        }
+    }
+
+    impl<'a, 'b, T: Clone + NumAssign + MulAddAssign> MulAddAssign<&'a Complex<T>, &'b T>
+        for Complex<T>
+    {
+        fn mul_add_assign(&mut self, other: &Complex<T>, add: &T) {
+            self.mul_add_assign(other.clone(), add.clone());
+        }
+    }
+
+    // (a + i b) * (c + i 0) + (e + i 0) == (a*c + e) + i (b*c)
+    impl<T: Clone + NumAssign + MulAddAssign> MulAddAssign<T, T> for Complex<T> {
+        fn mul_add_assign(&mut self, other: T, add: T) {
+
+            self.re.mul_add_assign(other.clone(), add); // (a*c + e)
+            self.im *= other; // b * c
+        }
+    }
+
+    impl<'a, 'b, T: Clone + NumAssign + MulAddAssign> MulAddAssign<&'a T, &'b T>
+        for Complex<T>
+    {
+        fn mul_add_assign(&mut self, other: &T, add: &T) {
             self.mul_add_assign(other.clone(), add.clone());
         }
     }
@@ -1671,6 +1785,15 @@ pub(crate) mod test {
     pub const _nan_1i: Complex64 = Complex::new(f64::NAN, 1.0);
     pub const _nan_neg1i: Complex64 = Complex::new(f64::NAN, -1.0);
     pub const _nan_nani: Complex64 = Complex::new(f64::NAN, f64::NAN);
+
+    
+    // Common integer contants
+    pub const _0_0i_i32: Complex<i32> = Complex { re: 0, im: 0 };
+    pub const _1_0i_i32: Complex<i32> = Complex { re: 1, im: 0 };
+    pub const _1_1i_i32: Complex<i32> = Complex { re: 1, im: 1 };
+    pub const _0_1i_i32: Complex<i32> = Complex { re: 0, im: 1 };
+    pub const _neg1_1i_i32: Complex<i32> = Complex { re: -1, im: 1 };
+    pub const all_consts_i32: [Complex<i32>; 5] = [_0_0i_i32, _1_0i_i32, _1_1i_i32, _0_1i_i32, _neg1_1i_i32];
 
     #[test]
     fn test_consts() {
@@ -2503,6 +2626,7 @@ pub(crate) mod test {
 
     mod complex_arithmetic {
         use super::{_05_05i, _0_0i, _0_1i, _1_0i, _1_1i, _4_2i, _neg1_1i, all_consts};
+        use super::{_0_0i_i32, _0_1i_i32, _1_0i_i32, _1_1i_i32, _neg1_1i_i32, all_consts_i32};
         use num_traits::{MulAdd, MulAddAssign, Zero};
 
         #[test]
@@ -2546,7 +2670,7 @@ pub(crate) mod test {
 
         #[test]
         #[cfg(any(feature = "std", feature = "libm"))]
-        fn test_mul_add_float() {
+        fn test_mul_add_float_complex_complex() {
             assert_eq!(_05_05i.mul_add(_05_05i, _0_0i), _05_05i * _05_05i + _0_0i);
             assert_eq!(_05_05i * _05_05i + _0_0i, _05_05i.mul_add(_05_05i, _0_0i));
             assert_eq!(_0_1i.mul_add(_0_1i, _0_1i), _neg1_1i);
@@ -2571,28 +2695,176 @@ pub(crate) mod test {
         }
 
         #[test]
-        fn test_mul_add() {
-            use super::Complex;
-            const _0_0i: Complex<i32> = Complex { re: 0, im: 0 };
-            const _1_0i: Complex<i32> = Complex { re: 1, im: 0 };
-            const _1_1i: Complex<i32> = Complex { re: 1, im: 1 };
-            const _0_1i: Complex<i32> = Complex { re: 0, im: 1 };
-            const _neg1_1i: Complex<i32> = Complex { re: -1, im: 1 };
-            const all_consts: [Complex<i32>; 5] = [_0_0i, _1_0i, _1_1i, _0_1i, _neg1_1i];
-
-            assert_eq!(_1_0i.mul_add(_1_0i, _0_0i), _1_0i * _1_0i + _0_0i);
-            assert_eq!(_1_0i * _1_0i + _0_0i, _1_0i.mul_add(_1_0i, _0_0i));
-            assert_eq!(_0_1i.mul_add(_0_1i, _0_1i), _neg1_1i);
-            assert_eq!(_1_0i.mul_add(_1_0i, _1_0i), _1_0i * _1_0i + _1_0i);
-            assert_eq!(_1_0i * _1_0i + _1_0i, _1_0i.mul_add(_1_0i, _1_0i));
+        #[cfg(any(feature = "std", feature = "libm"))]
+        fn test_mul_add_float_real_complex() {
+            assert_eq!(_05_05i.mul_add(0.5, _0_0i), _05_05i * 0.5 + _0_0i);
+            assert_eq!(_05_05i * 0.5 + _0_0i, _05_05i.mul_add(0.5, _0_0i));
+            assert_eq!(_1_0i.mul_add(1.0, _1_0i), _1_0i * 1.0 + _1_0i);
+            assert_eq!(_1_0i * 1.0 + _1_0i, _1_0i.mul_add(1.0, _1_0i));
 
             let mut x = _1_0i;
-            x.mul_add_assign(_1_0i, _1_0i);
-            assert_eq!(x, _1_0i * _1_0i + _1_0i);
+            x.mul_add_assign(1.0, _1_0i);
+            assert_eq!(x, _1_0i * 1.0 + _1_0i);
+
+            for &a in &all_consts {
+                for &b in &[-1.0, -0.5, 0.0, 0.5, 1.0] {
+                    for &c in &all_consts {
+                        let abc = a * b + c;
+                        assert_eq!(a.mul_add(b, c), abc);
+                        let mut x = a;
+                        x.mul_add_assign(b, c);
+                        assert_eq!(x, abc);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        #[cfg(any(feature = "std", feature = "libm"))]
+        fn test_mul_add_float_complex_real() {
+            assert_eq!(_05_05i.mul_add(_05_05i, 0.0), _05_05i * _05_05i + 0.0);
+            assert_eq!(_05_05i * _05_05i + 0.0, _05_05i.mul_add(_05_05i, 0.0));
+            assert_eq!(_1_0i.mul_add(_1_0i, 1.0), _1_0i * _1_0i + 1.0);
+            assert_eq!(_1_0i * _1_0i + 1.0, _1_0i.mul_add(_1_0i, 1.0));
+
+            let mut x = _1_0i;
+            x.mul_add_assign(_1_0i, 1.0);
+            assert_eq!(x, _1_0i * _1_0i + 1.0);
 
             for &a in &all_consts {
                 for &b in &all_consts {
-                    for &c in &all_consts {
+                    for &c in &[-1.0, -0.5, 0.0, 0.5, 1.0] {
+                        let abc = a * b + c;
+                        assert_eq!(a.mul_add(b, c), abc);
+                        let mut x = a;
+                        x.mul_add_assign(b, c);
+                        assert_eq!(x, abc);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        #[cfg(any(feature = "std", feature = "libm"))]
+        fn test_mul_add_float_real_real() {
+            assert_eq!(_05_05i.mul_add(0.5, 0.0), _05_05i * 0.5 + 0.0);
+            assert_eq!(_05_05i * 0.5 + 0.0, _05_05i.mul_add(0.5, 0.0));
+            assert_eq!(_1_0i.mul_add(1.0, 1.0), _1_0i * 1.0 + 1.0);
+            assert_eq!(_1_0i * 1.0 + 1.0, _1_0i.mul_add(1.0, 1.0));
+
+            let mut x = _1_0i;
+            x.mul_add_assign(1.0, 1.0);
+            assert_eq!(x, _1_0i * 1.0 + 1.0);
+
+            for &a in &all_consts {
+                for &b in &[-1.0, -0.5, 0.0, 0.5, 1.0] {
+                    for &c in &[-1.0, -0.5, 0.0, 0.5, 1.0] {
+                        let abc = a * b + c;
+                        assert_eq!(a.mul_add(b, c), abc);
+                        let mut x = a;
+                        x.mul_add_assign(b, c);
+                        assert_eq!(x, abc);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn test_mul_add_complex_complex() {
+            assert_eq!(_1_0i_i32.mul_add(_1_0i_i32, _0_0i_i32), _1_0i_i32 * _1_0i_i32 + _0_0i_i32);
+            assert_eq!(_1_0i_i32 * _1_0i_i32 + _0_0i_i32, _1_0i_i32.mul_add(_1_0i_i32, _0_0i_i32));
+            assert_eq!(_0_1i_i32.mul_add(_0_1i_i32, _0_1i_i32), _neg1_1i_i32);
+            assert_eq!(_1_0i_i32.mul_add(_1_0i_i32, _1_0i_i32), _1_0i_i32 * _1_0i_i32 + _1_0i_i32);
+            assert_eq!(_1_0i_i32 * _1_0i_i32 + _1_0i_i32, _1_0i_i32.mul_add(_1_0i_i32, _1_0i_i32));
+
+            let mut x = _1_0i_i32;
+            x.mul_add_assign(_1_0i_i32, _1_0i_i32);
+            assert_eq!(x, _1_0i_i32 * _1_0i_i32 + _1_0i_i32);
+
+            for &a in &all_consts_i32 {
+                for &b in &all_consts_i32 {
+                    for &c in &all_consts_i32 {
+                        let abc = a * b + c;
+                        assert_eq!(a.mul_add(b, c), abc);
+                        let mut x = a;
+                        x.mul_add_assign(b, c);
+                        assert_eq!(x, abc);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn test_mul_add_real_complex() {
+            const real_consts: [i32; 3] = [-1, 0, 1];
+
+            assert_eq!(_1_0i_i32.mul_add(1, _0_0i_i32), _1_0i_i32 * _1_0i_i32 + _0_0i_i32);
+            assert_eq!(_1_0i_i32 * _1_0i_i32 + _0_0i_i32, _1_0i_i32.mul_add(1, _0_0i_i32));
+            assert_eq!(_1_0i_i32.mul_add(1, _1_0i_i32), _1_0i_i32 * _1_0i_i32 + _1_0i_i32);
+            assert_eq!(_1_0i_i32 * _1_0i_i32 + _1_0i_i32, _1_0i_i32.mul_add(1, _1_0i_i32));
+            assert_eq!(_1_0i_i32.mul_add(0, _1_0i_i32), _1_0i_i32 * _0_0i_i32 + _1_0i_i32);
+            assert_eq!(_1_0i_i32 * _0_0i_i32 + _1_0i_i32, _1_0i_i32.mul_add(0, _1_0i_i32));
+
+            let mut x = _1_0i_i32;
+            x.mul_add_assign(1, _1_0i_i32);
+            assert_eq!(x, _1_0i_i32 * _1_0i_i32 + _1_0i_i32);
+
+            for &a in &all_consts_i32 {
+                for &b in &[-1, 0, 1] {
+                    for &c in &all_consts_i32 {
+                        let abc = a * b + c;
+                        assert_eq!(a.mul_add(b, c), abc);
+                        let mut x = a;
+                        x.mul_add_assign(b, c);
+                        assert_eq!(x, abc);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn test_mul_add_complex_real() {
+            assert_eq!(_1_0i_i32.mul_add(_1_0i_i32, 0), _1_0i_i32 * _1_0i_i32 + _0_0i_i32);
+            assert_eq!(_1_0i_i32 * _1_0i_i32 + _0_0i_i32, _1_0i_i32.mul_add(_1_0i_i32, 0));
+            assert_eq!(_1_0i_i32.mul_add(_1_0i_i32, 1), _1_0i_i32 * _1_0i_i32 + _1_0i_i32);
+            assert_eq!(_1_0i_i32 * _1_0i_i32 + _1_0i_i32, _1_0i_i32.mul_add(_1_0i_i32, 1));
+            assert_eq!(_1_0i_i32.mul_add(_0_0i_i32, 1), _1_0i_i32 * _0_0i_i32 + _1_0i_i32);
+            assert_eq!(_1_0i_i32 * _0_0i_i32 + _1_0i_i32, _1_0i_i32.mul_add(_0_0i_i32, 1));
+
+            let mut x = _1_0i_i32;
+            x.mul_add_assign(_1_0i_i32, 1);
+            assert_eq!(x, _1_0i_i32 * _1_0i_i32 + _1_0i_i32);
+
+            for &a in &all_consts_i32 {
+                for &b in &all_consts_i32 {
+                    for &c in &[-1, 0, 1] {
+                        let abc = a * b + c;
+                        assert_eq!(a.mul_add(b, c), abc);
+                        let mut x = a;
+                        x.mul_add_assign(b, c);
+                        assert_eq!(x, abc);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn test_mul_add_real_real() {
+
+            assert_eq!(_1_0i_i32.mul_add(1, 0), _1_0i_i32 * _1_0i_i32 + _0_0i_i32);
+            assert_eq!(_1_0i_i32 * _1_0i_i32 + _0_0i_i32, _1_0i_i32.mul_add(1, 0));
+            assert_eq!(_1_0i_i32.mul_add(1, 1), _1_0i_i32 * _1_0i_i32 + _1_0i_i32);
+            assert_eq!(_1_0i_i32 * _1_0i_i32 + _1_0i_i32, _1_0i_i32.mul_add(1, 1));
+            assert_eq!(_1_0i_i32.mul_add(0, 1), _1_0i_i32 * _0_0i_i32 + _1_0i_i32);
+            assert_eq!(_1_0i_i32 * _0_0i_i32 + _1_0i_i32, _1_0i_i32.mul_add(0, 1));
+
+            let mut x = _1_0i_i32;
+            x.mul_add_assign(1, 1);
+            assert_eq!(x, _1_0i_i32 * _1_0i_i32 + _1_0i_i32);
+
+            for &a in &all_consts_i32 {
+                for &b in &[-1, 0, 1] {
+                    for &c in &[-1, 0, 1] {
                         let abc = a * b + c;
                         assert_eq!(a.mul_add(b, c), abc);
                         let mut x = a;
