@@ -132,6 +132,43 @@ impl<T> Complex<T> {
     pub const fn new(re: T, im: T) -> Self {
         Complex { re, im }
     }
+
+    /// Returns `self` converted to an array.
+    #[inline]
+    pub fn to_array(self) -> [T; 2] {
+        [self.re, self.im]
+    }
+
+    /// Returns `self` as a borrowed array.
+    #[inline]
+    pub const fn as_array_ref(&self) -> &[T; 2] {
+        unsafe {
+            // SAFETY: `Self` is guaranteed to have the same memory layout as `[T; 2]`.
+            std::mem::transmute::<&Self, &[T; 2]>(self)
+        }
+    }
+
+    /// Returns `self` as a mutably borrowed array.
+    #[inline]
+    pub const fn as_array_mut(&mut self) -> &mut [T; 2] {
+        unsafe {
+            // SAFETY: `Self` is guaranteed to have the same memory layout as `[T; 2]`.
+            std::mem::transmute::<&mut Self, &mut [T; 2]>(self)
+        }
+    }
+
+    /// Returns a new `Complex` value, with function `f` applied to the real and imaginary
+    /// components.
+    #[inline]
+    pub fn map<F, U>(self, mut f: F) -> Complex<U>
+    where
+        F: FnMut(T) -> U,
+    {
+        Complex {
+            re: f(self.re),
+            im: f(self.im),
+        }
+    }
 }
 
 impl<T: Clone + Num> Complex<T> {
@@ -698,6 +735,14 @@ impl<'a, T: Clone + Num> From<&'a T> for Complex<T> {
     #[inline]
     fn from(re: &T) -> Self {
         From::from(re.clone())
+    }
+}
+
+impl<T> From<[T; 2]> for Complex<T> {
+    #[inline]
+    fn from(array: [T; 2]) -> Self {
+        let [re, im] = array;
+        Self { re, im }
     }
 }
 
