@@ -35,7 +35,8 @@ if ! check_version $MSRV ; then
   exit 1
 fi
 
-FEATURES=(bytecheck bytemuck libm rand rkyv/size_64 serde)
+FEATURES=(bytecheck bytemuck libm rkyv/size_64 serde)
+check_version 1.85 && FEATURES+=(rand)
 echo "Testing supported features: ${FEATURES[*]}"
 
 generate_lockfile

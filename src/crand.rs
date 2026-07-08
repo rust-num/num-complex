@@ -2,13 +2,13 @@
 
 use crate::Complex;
 use num_traits::Num;
-use rand::distributions::Standard;
+use rand::distr::StandardUniform;
 use rand::prelude::*;
 
-impl<T> Distribution<Complex<T>> for Standard
+impl<T> Distribution<Complex<T>> for StandardUniform
 where
     T: Num + Clone,
-    Standard: Distribution<T>,
+    StandardUniform: Distribution<T>,
 {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Complex<T> {
         Complex::new(self.sample(rng), self.sample(rng))
@@ -42,36 +42,29 @@ where
 }
 
 #[cfg(test)]
-fn test_rng() -> impl RngCore {
+fn test_rng() -> impl Rng {
     /// Simple `Rng` for testing without additional dependencies
     struct XorShiftStar {
         a: u64,
     }
 
-    impl RngCore for XorShiftStar {
-        fn next_u32(&mut self) -> u32 {
-            self.next_u64() as u32
+    impl rand::TryRng for XorShiftStar {
+        type Error = core::convert::Infallible;
+
+        fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
+            Ok(self.next_u64() as u32)
         }
 
-        fn next_u64(&mut self) -> u64 {
+        fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
             // https://en.wikipedia.org/wiki/Xorshift#xorshift*
             self.a ^= self.a >> 12;
             self.a ^= self.a << 25;
             self.a ^= self.a >> 27;
-            self.a.wrapping_mul(0x2545_F491_4F6C_DD1D)
+            Ok(self.a.wrapping_mul(0x2545_F491_4F6C_DD1D))
         }
 
-        fn fill_bytes(&mut self, dest: &mut [u8]) {
-            for chunk in dest.chunks_mut(8) {
-                let bytes = self.next_u64().to_le_bytes();
-                let slice = &bytes[..chunk.len()];
-                chunk.copy_from_slice(slice)
-            }
-        }
-
-        fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
-            self.fill_bytes(dest);
-            Ok(())
+        fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Self::Error> {
+            rand::rand_core::utils::fill_bytes_via_next_word(dest, || self.try_next_u64())
         }
     }
 
@@ -84,7 +77,7 @@ fn test_rng() -> impl RngCore {
 fn standard_f64() {
     let mut rng = test_rng();
     for _ in 0..100 {
-        let c: Complex<f64> = rng.gen();
+        let c: Complex<f64> = rng.random();
         assert!(c.re >= 0.0 && c.re < 1.0);
         assert!(c.im >= 0.0 && c.im < 1.0);
     }
@@ -93,7 +86,7 @@ fn standard_f64() {
 #[test]
 fn generic_standard_f64() {
     let mut rng = test_rng();
-    let dist = ComplexDistribution::new(Standard, Standard);
+    let dist = ComplexDistribution::new(StandardUniform, StandardUniform);
     for _ in 0..100 {
         let c: Complex<f64> = rng.sample(dist);
         assert!(c.re >= 0.0 && c.re < 1.0);
@@ -103,11 +96,11 @@ fn generic_standard_f64() {
 
 #[test]
 fn generic_uniform_f64() {
-    use rand::distributions::Uniform;
+    use rand::distr::Uniform;
 
     let mut rng = test_rng();
-    let re = Uniform::new(-100.0, 0.0);
-    let im = Uniform::new(0.0, 100.0);
+    let re = Uniform::new(-100.0, 0.0).unwrap();
+    let im = Uniform::new(0.0, 100.0).unwrap();
     let dist = ComplexDistribution::new(re, im);
     for _ in 0..100 {
         // no type annotation required, since `Uniform` only produces one type.
@@ -119,11 +112,11 @@ fn generic_uniform_f64() {
 
 #[test]
 fn generic_mixed_f64() {
-    use rand::distributions::Uniform;
+    use rand::distr::Uniform;
 
     let mut rng = test_rng();
-    let re = Uniform::new(-100.0, 0.0);
-    let dist = ComplexDistribution::new(re, Standard);
+    let re = Uniform::new(-100.0, 0.0).unwrap();
+    let dist = ComplexDistribution::new(re, StandardUniform);
     for _ in 0..100 {
         // no type annotation required, since `Uniform` only produces one type.
         let c = rng.sample(dist);
@@ -134,11 +127,11 @@ fn generic_mixed_f64() {
 
 #[test]
 fn generic_uniform_i32() {
-    use rand::distributions::Uniform;
+    use rand::distr::Uniform;
 
     let mut rng = test_rng();
-    let re = Uniform::new(-100, 0);
-    let im = Uniform::new(0, 100);
+    let re = Uniform::new(-100, 0).unwrap();
+    let im = Uniform::new(0, 100).unwrap();
     let dist = ComplexDistribution::new(re, im);
     for _ in 0..100 {
         // no type annotation required, since `Uniform` only produces one type.

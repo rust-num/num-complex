@@ -13,7 +13,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-num-complex = "0.4"
+num-complex = "0.5"
 ```
 
 ## Features
@@ -23,7 +23,7 @@ the default `std` feature. Use this in `Cargo.toml`:
 
 ```toml
 [dependencies.num-complex]
-version = "0.4"
+version = "0.5"
 default-features = false
 ```
 
