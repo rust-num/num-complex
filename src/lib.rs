@@ -787,19 +787,29 @@ impl<T: Clone + Num> Mul<Complex<T>> for Complex<T> {
     }
 }
 
-// (a + i b) * (c + i d) + (e + i f) == ((a*c + e) - b*d) + i (a*d + (b*c + f))
-impl<T: Clone + Num + MulAdd<Output = T>> MulAdd<Complex<T>> for Complex<T> {
+// (a + i b) * (c + i d) + (e + i f) == (a*c - (b*d - e)) + i (a*d + (b*c + f))
+impl<T> MulAdd<Complex<T>> for Complex<T>
+where
+    T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>,
+{
     type Output = Complex<T>;
 
     #[inline]
     fn mul_add(self, other: Complex<T>, add: Complex<T>) -> Complex<T> {
-        let re = self.re.clone().mul_add(other.re.clone(), add.re)
-            - (self.im.clone() * other.im.clone()); // FIXME: use mulsub when available in rust
-        let im = self.re.mul_add(other.im, self.im.mul_add(other.re, add.im));
+        let (a, b) = (self.re, self.im);
+        let (c, d) = (other.re, other.im);
+        let (e, f) = (add.re, add.im);
+
+        let re = a
+            .clone()
+            .mul_add(c.clone(), -b.clone().mul_add(d.clone(), -e)); // FIXME: use mulsub when available in rust
+        let im = a.mul_add(d, b.mul_add(c, f));
         Complex::new(re, im)
     }
 }
-impl<'a, 'b, T: Clone + Num + MulAdd<Output = T>> MulAdd<&'b Complex<T>> for &'a Complex<T> {
+impl<'a, 'b, T: Clone + Num + MulAdd<Output = T> + Neg<Output = T>> MulAdd<&'b Complex<T>>
+    for &'a Complex<T>
+{
     type Output = Complex<T>;
 
     #[inline]
