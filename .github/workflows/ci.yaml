@@ -2,18 +2,18 @@ name: CI
 on: merge_group
 
 jobs:
-
   test:
     name: Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
         rust: [
-          1.60.0, # MSRV
-          stable,
-          beta,
-          nightly
-        ]
+            1.60.0, # MSRV
+            1.81.0, # rkyv
+            stable,
+            beta,
+            nightly
+          ]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4

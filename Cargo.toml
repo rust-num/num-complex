@@ -15,7 +15,7 @@ edition = "2021"
 rust-version = "1.60"
 
 [package.metadata.docs.rs]
-features = ["bytemuck", "std", "serde", "rkyv/size_64", "bytecheck", "rand"]
+features = ["bytemuck", "std", "serde", "rkyv", "rand"]
 
 [dependencies]
 
@@ -35,13 +35,12 @@ default-features = false
 
 [dependencies.rkyv]
 optional = true
-version = "0.7"
+version = "0.8"
 default-features = false
 
 [dependencies.bytecheck]
 optional = true
-version = "0.6"
-default-features = false
+version = "0.8"
 
 [dependencies.rand]
 optional = true
@@ -52,8 +51,7 @@ default-features = false
 default = ["std"]
 std = ["num-traits/std"]
 libm = ["num-traits/libm"]
-bytecheck = ["dep:bytecheck"]
 bytemuck = ["dep:bytemuck"]
 rand = ["dep:rand"]
-rkyv = ["dep:rkyv"]
+rkyv = ["dep:rkyv", "rkyv/bytecheck", "dep:bytecheck"]
 serde = ["dep:serde"]

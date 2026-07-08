@@ -81,10 +81,9 @@ pub use crate::crand::ComplexDistribution;
 #[repr(C)]
 #[cfg_attr(
     feature = "rkyv",
-    derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+    derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, rkyv::Portable, bytecheck::CheckBytes),
+    rkyv(as = Complex<T::Archived>)
 )]
-#[cfg_attr(feature = "rkyv", archive(as = "Complex<T::Archived>"))]
-#[cfg_attr(feature = "bytecheck", derive(bytecheck::CheckBytes))]
 pub struct Complex<T> {
     /// Real portion of the complex number
     pub re: T,
@@ -2404,7 +2403,7 @@ pub(crate) mod test {
         }
 
         #[test]
-        fn test_hyperbolic_identites() {
+        fn test_hyperbolic_identities() {
             for &c in all_consts.iter() {
                 // tanh(z) = sinh(z)/cosh(z)
                 assert!(close(c.tanh(), c.sinh() / c.cosh()));
