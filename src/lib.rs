@@ -624,6 +624,48 @@ impl<T: Float> Complex<T> {
     pub fn fdiv(self, other: Complex<T>) -> Complex<T> {
         self * other.finv()
     }
+
+    /// The ln_1p() function computes the natural logarithm
+    /// of (1 + z), which is particularly useful for
+    /// small values of `z` to avoid loss of precision
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use num_complex::Complex64;
+    /// use num_complex::ComplexFloat;
+    ///
+    /// let a = Complex64::new(2.0e-16, 3.0e-16);
+    ///
+    /// let approx_val = a.ln_1p();
+    /// let expected_val = Complex64::new(2.2204e-16, 2.999e-16);
+    /// assert!((approx_val - expected_val).norm() < 1e-18);
+    /// ```
+    #[inline]
+    pub fn ln_1p(self) -> Self {
+        (Self::one() + self).ln()
+    }
+
+    /// The exp_m1() function computes the exponential
+    /// of z minus one (`e^(z) - 1`), which is particularly
+    /// useful for small values of `z` to avoid loss of precision
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use num_complex::Complex64;
+    /// use num_complex::ComplexFloat;
+    ///
+    /// let a = Complex64::new(2.0e-16, 3.0e-16);
+    ///
+    /// let approx_val = a.exp_m1();
+    /// let expected_val = Complex64::new(2.2204e-16, 3.0e-16);
+    /// assert!((approx_val - expected_val).norm() < 1e-18);
+    /// ```
+    #[inline]
+    pub fn exp_m1(self) -> Self {
+        self.exp() - Self::one()
+    }
 }
 
 #[cfg(any(feature = "std", feature = "libm"))]
@@ -2430,6 +2472,22 @@ pub(crate) mod test {
                     (c.scale(2.0).exp() - _1_0i) / (c.scale(2.0).exp() + _1_0i),
                     c.tanh()
                 ));
+            }
+        }
+
+        #[test]
+        fn test_ln_1p() {
+            for &c in all_consts.iter() {
+                // ln_1p(z) = ln(1+z)
+                assert!(close(c.ln_1p(), (1.0 + c).ln()));
+            }
+        }
+
+        #[test]
+        fn test_exp_m1() {
+            for &c in all_consts.iter() {
+                // exp_m1(z) = exp(z) - 1
+                assert!(close(c.exp_m1(), (c).exp() - 1.0));
             }
         }
     }
