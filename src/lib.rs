@@ -134,6 +134,14 @@ impl<T> Complex<T> {
     }
 }
 
+impl<T: Zero> Complex<T> {
+    /// Create a new `Complex` from a real number.
+    #[inline]
+    pub fn from_real(re: T) -> Self {
+        Self::new(re, T::zero())
+    }
+}
+
 impl<T: Clone + Num> Complex<T> {
     /// Returns the imaginary unit.
     ///
@@ -1671,6 +1679,25 @@ pub(crate) mod test {
     pub const _nan_1i: Complex64 = Complex::new(f64::NAN, 1.0);
     pub const _nan_neg1i: Complex64 = Complex::new(f64::NAN, -1.0);
     pub const _nan_nani: Complex64 = Complex::new(f64::NAN, f64::NAN);
+
+    #[test]
+    fn test_from_real() {
+        for re in [
+            -3.123,
+            -1.0,
+            0.0,
+            1.0,
+            5.67,
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+        ] {
+            assert_eq!(Complex::new(re, 0.0), Complex::from_real(re));
+        }
+        {
+            let x = Complex::from_real(f64::NAN);
+            assert!(x.re.is_nan() && x.im.is_zero());
+        }
+    }
 
     #[test]
     fn test_consts() {
