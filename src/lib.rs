@@ -1238,16 +1238,17 @@ impl<T: Clone + Num> One for Complex<T> {
 
 macro_rules! write_complex {
     ($f:ident, $t:expr, $prefix:expr, $re:expr, $im:expr, $T:ident) => {{
-        let abs_re = if $re < Zero::zero() {
-            $T::zero() - $re.clone()
-        } else {
-            $re.clone()
+        let abs = |x: &$T| {
+            if x.is_zero() {
+                $T::zero()
+            } else if *x < Zero::zero() {
+                $T::zero() - x.clone()
+            } else {
+                x.clone()
+            }
         };
-        let abs_im = if $im < Zero::zero() {
-            $T::zero() - $im.clone()
-        } else {
-            $im.clone()
-        };
+        let abs_re = abs(&$re);
+        let abs_im = abs(&$im);
 
         return if let Some(prec) = $f.precision() {
             fmt_re_im(
@@ -2715,6 +2716,14 @@ pub(crate) mod test {
         assert_eq!(format!("{}", c), "-10-10000i");
         #[cfg(feature = "std")]
         assert_eq!(format!("{:16}", c), "      -10-10000i");
+
+        for re in [-0.0, 0.0] {
+            for im in [-0.0, 0.0] {
+                let d = Complex::new(re, im);
+                assert_eq!(format!("{}", d), "0+0i");
+                assert_eq!(format!("{:+}", d), "+0+0i");
+            }
+        }
     }
 
     #[test]
