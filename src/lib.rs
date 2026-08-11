@@ -30,7 +30,10 @@ use core::str::FromStr;
 #[cfg(feature = "std")]
 use std::error::Error;
 
-use num_traits::{ConstOne, ConstZero, Inv, MulAdd, Num, One, Pow, Signed, Zero};
+use num_traits::{
+    CheckedAdd, CheckedDiv, CheckedMul, CheckedRem, CheckedSub, ConstOne, ConstZero, Inv, MulAdd,
+    Num, One, Pow, Signed, Zero,
+};
 
 use num_traits::float::FloatCore;
 #[cfg(any(feature = "std", feature = "libm"))]
@@ -761,6 +764,16 @@ impl<T: Clone + Num> Add<Complex<T>> for Complex<T> {
     }
 }
 
+impl<T: Clone + Num + CheckedAdd> CheckedAdd for Complex<T> {
+    #[inline]
+    fn checked_add(&self, other: &Self) -> Option<Self> {
+        Some(Self::new(
+            self.re.checked_add(&other.re)?,
+            self.im.checked_add(&other.im)?,
+        ))
+    }
+}
+
 forward_all_binop!(impl Sub, sub);
 
 // (a + i b) - (c + i d) == (a - c) + i (b - d)
@@ -770,6 +783,16 @@ impl<T: Clone + Num> Sub<Complex<T>> for Complex<T> {
     #[inline]
     fn sub(self, other: Self) -> Self::Output {
         Self::Output::new(self.re - other.re, self.im - other.im)
+    }
+}
+
+impl<T: Clone + Num + CheckedSub> CheckedSub for Complex<T> {
+    #[inline]
+    fn checked_sub(&self, other: &Self) -> Option<Self> {
+        Some(Self::new(
+            self.re.checked_sub(&other.re)?,
+            self.im.checked_sub(&other.im)?,
+        ))
     }
 }
 
@@ -787,6 +810,23 @@ impl<T: Clone + Num> Mul<Complex<T>> for Complex<T> {
     }
 }
 
+impl<T: Clone + Num + CheckedMul + CheckedAdd + CheckedSub> CheckedMul for Complex<T> {
+    #[inline]
+    fn checked_mul(&self, other: &Self) -> Option<Self> {
+        let re = self
+            .re
+            .checked_mul(&other.re)?
+            .checked_sub(&self.im.checked_mul(&other.im)?)?;
+
+        let im = self
+            .re
+            .checked_mul(&other.im)?
+            .checked_add(&self.im.checked_mul(&other.re)?)?;
+
+        Some(Self::new(re, im))
+    }
+}
+
 // (a + i b) * (c + i d) + (e + i f) == ((a*c + e) - b*d) + i (a*d + (b*c + f))
 impl<T: Clone + Num + MulAdd<Output = T>> MulAdd<Complex<T>> for Complex<T> {
     type Output = Complex<T>;
@@ -799,6 +839,7 @@ impl<T: Clone + Num + MulAdd<Output = T>> MulAdd<Complex<T>> for Complex<T> {
         Complex::new(re, im)
     }
 }
+
 impl<'a, 'b, T: Clone + Num + MulAdd<Output = T>> MulAdd<&'b Complex<T>> for &'a Complex<T> {
     type Output = Complex<T>;
 
@@ -824,6 +865,30 @@ impl<T: Clone + Num> Div<Complex<T>> for Complex<T> {
     }
 }
 
+impl<T: Clone + Num + CheckedAdd + CheckedSub + CheckedMul + CheckedDiv> CheckedDiv for Complex<T> {
+    #[inline]
+    fn checked_div(&self, other: &Self) -> Option<Self> {
+        let norm_sqr = other
+            .re
+            .checked_mul(&other.re)?
+            .checked_add(&other.im.checked_mul(&other.im)?)?;
+
+        let re = self
+            .re
+            .checked_mul(&other.re)?
+            .checked_add(&self.im.checked_mul(&other.im)?)?;
+
+        let im = self
+            .im
+            .checked_mul(&other.re)?
+            .checked_sub(&self.re.checked_mul(&other.im)?)?;
+        Some(Self::new(
+            re.checked_div(&norm_sqr)?,
+            im.checked_div(&norm_sqr)?,
+        ))
+    }
+}
+
 forward_all_binop!(impl Rem, rem);
 
 impl<T: Clone + Num> Complex<T> {
@@ -834,6 +899,16 @@ impl<T: Clone + Num> Complex<T> {
     }
 }
 
+impl<T: Clone + Num + CheckedAdd + CheckedSub + CheckedMul + CheckedDiv + CheckedRem> Complex<T> {
+    fn checked_div_trunc(&self, divisor: &Self) -> Option<Self> {
+        let Complex { re, im } = self.checked_div(divisor)?;
+        let re = re.checked_sub(&re.checked_rem(&T::one())?)?;
+        let im = im.checked_sub(&im.checked_rem(&T::one())?)?;
+
+        Some(Self::new(re, im))
+    }
+}
+
 impl<T: Clone + Num> Rem<Complex<T>> for Complex<T> {
     type Output = Self;
 
@@ -841,6 +916,17 @@ impl<T: Clone + Num> Rem<Complex<T>> for Complex<T> {
     fn rem(self, modulus: Self) -> Self::Output {
         let gaussian = self.div_trunc(&modulus);
         self - modulus * gaussian
+    }
+}
+
+impl<T: Clone + Num + CheckedAdd + CheckedSub + CheckedMul + CheckedDiv + CheckedRem> CheckedRem
+    for Complex<T>
+{
+    #[inline]
+    fn checked_rem(&self, modulus: &Self) -> Option<Self> {
+        let gaussian = self.checked_div_trunc(modulus)?;
+
+        self.checked_sub(&modulus.checked_mul(&gaussian)?)
     }
 }
 
