@@ -268,9 +268,29 @@ impl<T: Float> Complex<T> {
     /// The branch satisfies `-π ≤ arg(ln(z)) ≤ π`.
     #[inline]
     pub fn ln(self) -> Self {
-        // formula: ln(z) = ln|z| + i*arg(z)
-        let (r, theta) = self.to_polar();
-        Self::new(r.ln(), theta)
+        let (radius, theta) = self.to_polar();
+        let low = T::from(0.75).unwrap();
+        let high = T::from(1.25).unwrap();
+        if !(radius >= low && radius <= high) {
+            return Self::new(radius.ln(), theta);
+        }
+
+        let re = self.re.abs();
+        let im = self.im.abs();
+        let (a, b) = if re >= im { (re, im) } else { (im, re) };
+        let one = T::one();
+        let two = T::from(2.0).unwrap();
+        let p = a * a;
+        let q = b * b;
+        if a == one && q < two * T::min_positive_value() {
+            return Self::new(b * (b / two), theta);
+        }
+        let s = p + q;
+        let addition_error = (p - s) + q;
+        let large_square_error = a.mul_add(a, -p);
+        let small_square_error = b.mul_add(b, -q);
+        let delta = (((s - one) + addition_error) + large_square_error) + small_square_error;
+        Self::new(delta.ln_1p() / two, theta)
     }
 
     /// Computes the principal value of the square root of `self`.
@@ -1939,6 +1959,241 @@ pub(crate) mod test {
                 assert!(close(c.conj().ln(), c.ln().conj()));
                 // for this branch, -pi <= arg(ln(z)) <= pi
                 assert!(-f64::consts::PI <= c.ln().arg() && c.ln().arg() <= f64::consts::PI);
+            }
+        }
+
+        #[test]
+        fn test_ln_near_unit_f64() {
+            let cases: &[(u64, u64, u64, u64)] = &[
+                (
+                    0x3feffff5de392baf,
+                    0x3f720281174e0b28,
+                    0x3ed447b4d1091f51,
+                    8,
+                ),
+                (
+                    0x3fec395ffdd35dd1,
+                    0x3fde28d594f859ff,
+                    0x3c317cb70a8af428,
+                    8,
+                ),
+                (
+                    0x3fe3333333333333,
+                    0x3fe999999999999a,
+                    0x3c7999999999999a,
+                    8,
+                ),
+                (
+                    0x3fe6a09e667f3bcd,
+                    0x3fe6a09e667f3bcd,
+                    0x3c93b3efbf5e2229,
+                    8,
+                ),
+                (
+                    0x3ff0000000000000,
+                    0x3e50000000000000,
+                    0x3c9fffffffffffff,
+                    8,
+                ),
+                (
+                    0x3ff0000000000000,
+                    0x1e60000000000001,
+                    0x0000000000000001,
+                    0,
+                ),
+                (
+                    0x3ff0000000000000,
+                    0x0010000000000000,
+                    0x0000000000000000,
+                    0,
+                ),
+                (
+                    0x3ff0000000000000,
+                    0x0000000000000001,
+                    0x0000000000000000,
+                    0,
+                ),
+                (
+                    0x3ff0000000000000,
+                    0x0000000000000000,
+                    0x0000000000000000,
+                    0,
+                ),
+                (
+                    0x3ff0000000000000,
+                    0x2006a09e667f3bcc,
+                    0x000fffffffffffff,
+                    0,
+                ),
+                (
+                    0x3ff0000000000000,
+                    0x2006a09e667f3bcd,
+                    0x0010000000000001,
+                    8,
+                ),
+                (
+                    0x3ff0000000000000,
+                    0x2006a09e667f3bce,
+                    0x0010000000000002,
+                    8,
+                ),
+                (
+                    0x3fefffffffffffff,
+                    0x1e60000000000001,
+                    0xbca0000000000000,
+                    8,
+                ),
+                (
+                    0x3ff0000000000001,
+                    0x1e60000000000001,
+                    0x3cafffffffffffff,
+                    8,
+                ),
+            ];
+            for &(real_bits, imag_bits, expected_bits, max_ulp) in cases {
+                for re_sign in [0, 1 << 63] {
+                    for im_sign in [0, 1 << 63] {
+                        let re = f64::from_bits(real_bits | re_sign);
+                        let im = f64::from_bits(imag_bits | im_sign);
+                        for value in [Complex::new(re, im), Complex::new(im, re)] {
+                            let actual = value.ln();
+                            assert!(
+                                actual.re.to_bits().abs_diff(expected_bits) <= max_ulp,
+                                "input={value:?} actual={:x} expected={expected_bits:x} max_ulp={max_ulp}",
+                                actual.re.to_bits(),
+                            );
+                            assert_eq!(actual.im.to_bits(), value.arg().to_bits());
+                        }
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn test_ln_fallback_f64() {
+            let cases = [
+                (0.0, 0.0),
+                (3.0, 4.0),
+                (0.5, 0.5),
+                (2.0, 3.0),
+                (f64::from_bits((0.75_f64).to_bits() - 1), 0.0),
+                (f64::from_bits((1.25_f64).to_bits() + 1), 0.0),
+                (f64::MAX, f64::MAX),
+                (f64::MIN_POSITIVE, f64::MIN_POSITIVE),
+                (f64::from_bits(1), f64::from_bits(1)),
+                (f64::INFINITY, 0.0),
+                (f64::INFINITY, 1.0),
+                (f64::INFINITY, f64::INFINITY),
+                (f64::INFINITY, f64::NAN),
+                (f64::NAN, 0.0),
+                (f64::NAN, 1.0),
+                (f64::NAN, f64::NAN),
+            ];
+            for (re, im) in cases {
+                for re_sign in [1.0, -1.0] {
+                    for im_sign in [1.0, -1.0] {
+                        for value in [
+                            Complex::new(re * re_sign, im * im_sign),
+                            Complex::new(im * im_sign, re * re_sign),
+                        ] {
+                            let (radius, theta) = value.to_polar();
+                            let expected_re = Float::ln(radius);
+                            let actual = value.ln();
+                            if expected_re.is_nan() {
+                                assert!(actual.re.is_nan());
+                            } else {
+                                assert_eq!(actual.re.to_bits(), expected_re.to_bits());
+                            }
+                            if theta.is_nan() {
+                                assert!(actual.im.is_nan());
+                            } else {
+                                assert_eq!(actual.im.to_bits(), theta.to_bits());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn test_ln_near_unit_f32() {
+            let cases: &[(u32, u32, u32, u32)] = &[
+                (0x3f7fffaf, 0x3b901409, 0x36a25a15, 8),
+                (0x3f7ffa52, 0x3c57b2e6, 0xac83195c, 8),
+                (0x3f19999a, 0x3f4ccccd, 0x32cccccd, 8),
+                (0x3f800000, 0x39800000, 0x33000000, 8),
+                (0x3f800000, 0x1a3504f4, 0x00000001, 0),
+                (0x3f800000, 0x00800000, 0x00000000, 0),
+                (0x3f800000, 0x00000001, 0x00000000, 0),
+                (0x3f800000, 0x00000000, 0x00000000, 0),
+                (0x3f800000, 0x203504f2, 0x007ffffe, 0),
+                (0x3f800000, 0x203504f3, 0x00800000, 0),
+                (0x3f800000, 0x203504f4, 0x00800001, 8),
+                (0x3f7fffff, 0x1a3504f4, 0xb3800000, 8),
+                (0x3f800001, 0x1a3504f4, 0x33ffffff, 8),
+            ];
+            for &(real_bits, imag_bits, expected_bits, max_ulp) in cases {
+                for re_sign in [0, 1 << 31] {
+                    for im_sign in [0, 1 << 31] {
+                        let re = f32::from_bits(real_bits | re_sign);
+                        let im = f32::from_bits(imag_bits | im_sign);
+                        for value in [Complex::new(re, im), Complex::new(im, re)] {
+                            let actual = value.ln();
+                            assert!(
+                                actual.re.to_bits().abs_diff(expected_bits) <= max_ulp,
+                                "input={value:?} actual={:x} expected={expected_bits:x} max_ulp={max_ulp}",
+                                actual.re.to_bits(),
+                            );
+                            assert_eq!(actual.im.to_bits(), value.arg().to_bits());
+                        }
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn test_ln_fallback_f32() {
+            let cases = [
+                (0.0, 0.0),
+                (3.0, 4.0),
+                (0.5, 0.5),
+                (2.0, 3.0),
+                (f32::from_bits((0.75_f32).to_bits() - 1), 0.0),
+                (f32::from_bits((1.25_f32).to_bits() + 1), 0.0),
+                (f32::MAX, f32::MAX),
+                (f32::MIN_POSITIVE, f32::MIN_POSITIVE),
+                (f32::from_bits(1), f32::from_bits(1)),
+                (f32::INFINITY, 0.0),
+                (f32::INFINITY, 1.0),
+                (f32::INFINITY, f32::INFINITY),
+                (f32::INFINITY, f32::NAN),
+                (f32::NAN, 0.0),
+                (f32::NAN, 1.0),
+                (f32::NAN, f32::NAN),
+            ];
+            for (re, im) in cases {
+                for re_sign in [1.0, -1.0] {
+                    for im_sign in [1.0, -1.0] {
+                        for value in [
+                            Complex::new(re * re_sign, im * im_sign),
+                            Complex::new(im * im_sign, re * re_sign),
+                        ] {
+                            let (radius, theta) = value.to_polar();
+                            let expected_re = Float::ln(radius);
+                            let actual = value.ln();
+                            if expected_re.is_nan() {
+                                assert!(actual.re.is_nan());
+                            } else {
+                                assert_eq!(actual.re.to_bits(), expected_re.to_bits());
+                            }
+                            if theta.is_nan() {
+                                assert!(actual.im.is_nan());
+                            } else {
+                                assert_eq!(actual.im.to_bits(), theta.to_bits());
+                            }
+                        }
+                    }
+                }
             }
         }
 
